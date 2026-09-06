@@ -9,8 +9,9 @@ The jobs are split into three stages:
    test, after the PINN array succeeds. This ordering prevents PINN and
    classical processes from writing the same per-test CSV simultaneously.
 
-No site-specific account, partition, or module names are hard-coded. Supply
-them to `sbatch` or add the corresponding `#SBATCH` lines for your cluster.
+The checked-in jobs use the target server settings: partition `rocky`, one GPU
+requested with `--gpus=1` for PINN jobs, and the time limits recorded in the
+three `.sbatch` files. An account can still be supplied at submission time.
 
 ## Environment
 
@@ -32,7 +33,7 @@ python3 -m pip install -r requirements-cuda124.txt
 Verify CUDA on a GPU allocation:
 
 ```bash
-srun --gres=gpu:1 --time=00:10:00 \
+srun --partition=rocky --gpus=1 --time=00:10:00 \
   .venv/bin/python -c 'import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))'
 ```
 
@@ -48,32 +49,32 @@ Or pass common site settings without editing the scripts:
 
 ```bash
 SLURM_ACCOUNT=MY_ACCOUNT \
-SLURM_CPU_PARTITION=cpu \
-SLURM_GPU_PARTITION=gpu \
-SLURM_GPU_GRES=gpu:a100:1 \
+SLURM_CPU_PARTITION=rocky \
+SLURM_GPU_PARTITION=rocky \
+JCP_GPU_COUNT=1 \
 bash slurm/submit_pipeline.sh
 ```
 
 If the cluster requires an account and partitions, submit the stages directly:
 
 ```bash
-DATA_SUBMISSION=$(sbatch --parsable --account=MY_ACCOUNT --partition=cpu \
+DATA_SUBMISSION=$(sbatch --parsable --account=MY_ACCOUNT --partition=rocky \
   slurm/generate_data.sbatch)
 DATA_JOB=${DATA_SUBMISSION%%;*}
 
-PINN_SUBMISSION=$(sbatch --parsable --account=MY_ACCOUNT --partition=gpu \
+PINN_SUBMISSION=$(sbatch --parsable --account=MY_ACCOUNT --partition=rocky \
+  --gpus=1 \
   --dependency=afterok:${DATA_JOB} slurm/run_pinn_array.sbatch
 )
 PINN_JOB=${PINN_SUBMISSION%%;*}
 
-sbatch --account=MY_ACCOUNT --partition=cpu \
+sbatch --account=MY_ACCOUNT --partition=rocky \
   --dependency=afterok:${PINN_JOB} slurm/run_classical_array.sbatch
 ```
 
-On clusters that require a GPU type, override the generic request, for example
-`sbatch --gres=gpu:a100:1 ...`. Slurm exposes the allocated device through
-`CUDA_VISIBLE_DEVICES`; the script intentionally uses `cuda:0`, which means the
-first GPU visible inside that allocation.
+Slurm exposes the allocated device through `CUDA_VISIBLE_DEVICES`; the script
+intentionally uses `cuda:0`, which means the first GPU visible inside that
+allocation.
 
 Monitor and cancel jobs with:
 

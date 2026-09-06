@@ -17,8 +17,8 @@ fi
 if [[ -n "${SLURM_GPU_PARTITION:-}" ]]; then
   gpu_args+=("--partition=${SLURM_GPU_PARTITION}")
 fi
-if [[ -n "${SLURM_GPU_GRES:-}" ]]; then
-  gpu_args+=("--gres=${SLURM_GPU_GRES}")
+if [[ -n "${JCP_GPU_COUNT:-}" ]]; then
+  gpu_args+=("--gpus=${JCP_GPU_COUNT}")
 fi
 
 data_submission=$(sbatch --parsable "${common_args[@]}" "${cpu_args[@]}" \

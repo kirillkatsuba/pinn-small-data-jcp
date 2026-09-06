@@ -216,9 +216,9 @@ bash slurm/submit_pipeline.sh
 ```
 
 The pipeline first generates Tests 2--4 on CPU, then runs one GPU task per PINN
-test, and finally runs one CPU task per classical test. Site-specific Slurm
-account, partition, module, GPU type, memory, and time limits are documented as
-explicit parameters rather than hard-coded assumptions.
+test, and finally runs one CPU task per classical test. The checked-in jobs use
+the target server's `rocky` partition and request the PINN GPU with `--gpus=1`;
+the account and optional submission overrides are documented separately.
 
 ## Reproducibility across devices
 
