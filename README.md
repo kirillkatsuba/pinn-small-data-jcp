@@ -138,6 +138,19 @@ python3 -B paper_jcp/generate_corrected_benchmarks.py \
 Generation displays a `tqdm` progress bar. Test 4 is the largest output and
 contains 100 parameter realisations.
 
+Progress verbosity is explicit:
+
+```text
+--progress auto       per-layer bar with one worker, dataset bar in parallel
+--progress summary    one bar for completed datasets
+--progress detailed   physical time, CFL substeps, dt range, saturation range,
+                      mass-balance error, and pressure-balance error
+--progress none       disable bars
+```
+
+Detailed progress requires `--workers 1`; multiple per-layer bars from parallel
+finite-volume solves would make both terminal output and Slurm logs unreadable.
+
 ## Run the current extended protocol
 
 The defaults are ten seeds (`101`--`110`) and `50,000` PINN epochs. The best

@@ -10,6 +10,20 @@ The jobs are split into four stages:
    the PINN array succeeds.
 4. `merge_results.sbatch` validates and merges all seed-specific CSV shards.
 
+The parallel generation job uses `--progress summary`: the bar counts completed
+datasets and shows diagnostics for the most recently completed sample. For a
+single-run diagnostic generation, request one CPU and use:
+
+```bash
+python3 -B paper_jcp/generate_corrected_benchmarks.py \
+  --test test2 \
+  --output-root paper_jcp/generated/diagnostic_data \
+  --output-steps 100 --final-time-test2 0.3 --cfl 0.2 \
+  --workers 1 --progress detailed
+```
+
+Use a separate output root, as above, to avoid replacing publication data.
+
 The checked-in jobs use the target server settings: partition `rocky`, one GPU
 requested with `--gpus=1` for PINN jobs, and the time limits recorded in the
 four `.sbatch` files. An account can still be supplied at submission time.
