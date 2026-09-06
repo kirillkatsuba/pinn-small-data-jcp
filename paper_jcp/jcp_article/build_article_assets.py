@@ -1,8 +1,9 @@
 """Build publication figures and LaTeX tables from the final JCP experiments.
 
-The script deliberately uses only the final confirmatory namespaces.  Test 2
-PINN rows come from ``corrected_test2_final`` and its classical rows are
-replaced by the stronger expanding-window time-CV run.
+The script deliberately uses only the immutable final CSV snapshots tracked in
+``reproducibility/results``. Test 2 PINN rows come from the standard combined
+snapshot and its classical rows are replaced by the stronger expanding-window
+time-CV snapshot.
 """
 
 from __future__ import annotations
@@ -17,7 +18,8 @@ import pandas as pd
 
 ARTICLE = Path(__file__).resolve().parent
 PAPER = ARTICLE.parent
-GENERATED = PAPER / "generated"
+ROOT = PAPER.parent
+RESULTS = ROOT / "reproducibility" / "results"
 OUT = ARTICLE / "generated"
 FIGURES = ARTICLE / "figures"
 METHODS = ["H-PINN", "HO-PINN", "XGB", "SVM", "GP"]
@@ -33,10 +35,10 @@ MARKERS = {"H-PINN": "o", "HO-PINN": "s", "XGB": "^", "SVM": "D", "GP": "v"}
 
 def load_results() -> pd.DataFrame:
     sources = {
-        "Test 1": GENERATED / "test1_corrected_candidate" / "unified_test1.csv",
-        "Test 2": GENERATED / "corrected_test2_final" / "unified_test2.csv",
-        "Test 3": GENERATED / "corrected_test3_final" / "unified_test3.csv",
-        "Test 4": GENERATED / "corrected_test4_final" / "unified_test4.csv",
+        "Test 1": RESULTS / "test1.csv",
+        "Test 2": RESULTS / "test2_pinn_and_standard_classical.csv",
+        "Test 3": RESULTS / "test3.csv",
+        "Test 4": RESULTS / "test4.csv",
     }
     frames = []
     for test, path in sources.items():
@@ -46,7 +48,7 @@ def load_results() -> pd.DataFrame:
     data = pd.concat(frames, ignore_index=True)
 
     strong = pd.read_csv(
-        GENERATED / "corrected_test2_classical_strong" / "unified_test2.csv"
+        RESULTS / "test2_strong_classical.csv"
     )
     strong["test"] = "Test 2"
     is_test2_classical = (data["test"] == "Test 2") & data["method"].isin(
