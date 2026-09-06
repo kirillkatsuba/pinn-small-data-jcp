@@ -63,7 +63,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--test", required=True, choices=tuple(FINAL_EXPERIMENTS))
     parser.add_argument("--budget", type=int, default=50,
                         choices=(20, 50, 100, 200, 500, 1000))
-    parser.add_argument("--seed", type=int, default=101, choices=(101, 102, 103))
+    parser.add_argument("--seed", type=int, default=101, choices=tuple(range(101, 111)))
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=50_000,
+        help="Select the PINN checkpoint trained for this number of epochs.",
+    )
     parser.add_argument("--pinn", choices=("h", "ho"), default="h")
     parser.add_argument(
         "--time-fractions", default="0,0.5,0.7,1",
@@ -130,24 +136,29 @@ def training_labels(bundle, budget: int, seed: int) -> tuple[np.ndarray, np.ndar
     return bundle.features[indices[:budget]], bundle.targets[indices[:budget]]
 
 
-def checkpoint_path(test: str, budget: int, seed: int, balance_mode: str) -> Path:
+def checkpoint_path(
+    test: str, budget: int, seed: int, balance_mode: str, epochs: int
+) -> Path:
     directory = PAPER / "experiments" / FINAL_EXPERIMENTS[test] / "checkpoints"
     candidates = sorted(directory.glob(f"{test}_n{budget}_s{seed}_*.pth"))
     matching = []
     for path in candidates:
         payload = torch.load(path, map_location="cpu", weights_only=False)
-        if payload.get("balance_mode") == balance_mode:
+        trained_epochs = payload.get("train_config", {}).get("epochs")
+        if payload.get("balance_mode") == balance_mode and trained_epochs == epochs:
             matching.append(path)
     if len(matching) != 1:
         raise RuntimeError(
             f"Expected one {balance_mode} checkpoint for {test}, N={budget}, "
-            f"seed={seed}; found {matching}"
+            f"seed={seed}, epochs={epochs}; found {matching}"
         )
     return matching[0]
 
 
 def load_pinn(bundle, args: argparse.Namespace):
-    path = checkpoint_path(args.test, args.budget, args.seed, args.pinn)
+    path = checkpoint_path(
+        args.test, args.budget, args.seed, args.pinn, args.epochs
+    )
     payload = torch.load(path, map_location="cpu", weights_only=False)
     device = resolve_device(args.device)
     model = build_model(bundle, ModelConfig(**payload["model_config"])).to(device)

@@ -71,7 +71,7 @@ class ModelConfig:
 
 @dataclass(frozen=True)
 class TrainConfig:
-    epochs: int = 10_000
+    epochs: int = 50_000
     learning_rate: float = 1e-3
     min_learning_rate: float = 1e-5
     optimizer: str = "adam"
@@ -1433,6 +1433,8 @@ def configuration_id(
     train_config: TrainConfig,
 ) -> str:
     suffix = ""
+    if train_config.epochs != 10_000:
+        suffix += f"_e{train_config.epochs}"
     if train_config.device != "cpu":
         suffix += f"_{train_config.device.replace(':', '-')}"
     if not train_config.deterministic:

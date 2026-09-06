@@ -6,14 +6,15 @@ surrogates.
 
 The central question is practical: when only a small number of labelled
 solution points is available, can physics-informed learning outperform
-conventional data-only surrogates? The frozen protocol compares H-PINN and
+conventional data-only surrogates? The current candidate protocol compares H-PINN and
 HO-PINN with tuned XGBoost, RBF-SVM, and Gaussian-process regression on one
 analytical heat problem and three two-phase porous-flow problems.
 
 ## What is reproducible
 
 - label budgets `N = 20, 50, 100, 200, 500, 1000`;
-- independent training seeds `101, 102, 103`;
+- ten independent training seeds `101, ..., 110`;
+- `50,000` PINN epochs with best-validation checkpoint selection;
 - interpolation and temporal extrapolation evaluation;
 - identical nested labelled subsets for every method;
 - `N_r = 2N` residual points, resampled at every PINN epoch;
@@ -35,7 +36,7 @@ paper_jcp/
   two_phase_fv.py                  conservative reference solver
   generate_corrected_benchmarks.py Tests 2--4 data generator
   run_unified_protocol.py          configurable/resumable experiment runner
-  run_publication_suite.py         frozen publication configuration
+  run_publication_suite.py         current candidate configuration
   run_zero_label_experiment.py     N=0 and N=20 extension
   plot_model_comparison.py         GT/PINN/XGB/SVM/GP visualisations
   jcp_article/                     Elsevier/JCP LaTeX manuscript
@@ -54,17 +55,23 @@ compatibility with the completed experiments.
 
 ## Installation
 
-Python 3.13.1 and PyTorch 2.6.0 were used for the reported CPU runs. Create an
-isolated environment first:
+Python 3.13.1 and PyTorch 2.6.0 were used for the reported CPU runs. Environments
+are selected through Conda. For the CUDA server, create the checked-in environment:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
+conda env create -f environment.yml
+conda activate pinn-small-data-jcp
 ```
 
-Install exactly one PyTorch build.
+`environment.yml` is the CUDA 12.4 server environment and already installs the
+core stack and PyTorch. For a non-CUDA machine, create a Conda environment and
+then install exactly one appropriate PyTorch build:
+
+```bash
+conda create -n pinn-small-data-jcp python=3.13.1 pip -y
+conda activate pinn-small-data-jcp
+python3 -m pip install -r requirements.txt
+```
 
 CPU-only Linux/Windows:
 
@@ -101,6 +108,7 @@ python3 -B -m unittest \
   tests.test_corrected_unified_protocol \
   tests.test_classical_tuning \
   tests.test_generator_inputs \
+  tests.test_publication_defaults \
   tests.test_device_execution -v
 ```
 
@@ -130,7 +138,10 @@ python3 -B paper_jcp/generate_corrected_benchmarks.py \
 Generation displays a `tqdm` progress bar. Test 4 is the largest output and
 contains 100 parameter realisations.
 
-## Run the frozen publication protocol
+## Run the current extended protocol
+
+The defaults are ten seeds (`101`--`110`) and `50,000` PINN epochs. The best
+validation checkpoint is retained for every run.
 
 All four tests on the reference CPU protocol:
 
@@ -175,7 +186,7 @@ residual points and 50,000 epochs:
 ```bash
 python3 -B paper_jcp/run_zero_label_experiment.py \
   --experiment-name zero_label_test12_e50k_nr128 \
-  --test all --budgets 0,20 --seeds 101,102,103 \
+  --test all --budgets 0,20 --seeds 101,102,103,104,105,106,107,108,109,110 \
   --balancers h,ho --epochs 50000 --collocation-points 128 \
   --hidden-dim 128 --depth 6 --activation gelu \
   --learning-rate 0.003 --min-learning-rate 0.00001 \

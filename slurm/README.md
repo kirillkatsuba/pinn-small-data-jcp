@@ -1,40 +1,39 @@
 # Slurm execution
 
-The jobs are split into three stages:
+The jobs are split into four stages:
 
 1. `generate_data.sbatch` generates the deterministic finite-volume datasets
    for Tests 2--4 on a CPU node.
-2. `run_pinn_array.sbatch` launches four independent GPU tasks, one per test.
-3. `run_classical_array.sbatch` launches four independent CPU tasks, one per
-   test, after the PINN array succeeds. This ordering prevents PINN and
-   classical processes from writing the same per-test CSV simultaneously.
+2. `run_pinn_array.sbatch` launches 40 independent GPU tasks: four tests times
+   ten seeds.
+3. `run_classical_array.sbatch` launches the corresponding 40 CPU tasks after
+   the PINN array succeeds.
+4. `merge_results.sbatch` validates and merges all seed-specific CSV shards.
 
 The checked-in jobs use the target server settings: partition `rocky`, one GPU
 requested with `--gpus=1` for PINN jobs, and the time limits recorded in the
-three `.sbatch` files. An account can still be supplied at submission time.
+four `.sbatch` files. An account can still be supplied at submission time.
 
 ## Environment
 
 From the cloned repository on the cluster:
 
 ```bash
-# Adapt these module names to the cluster.
+# Load the server's Conda and CUDA modules; adapt their names if necessary.
 module purge
-module load python/3.13
+module load conda
 module load cuda/12.4
 
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
-python3 -m pip install -r requirements-cuda124.txt
+conda env create -f environment.yml
+conda activate pinn-small-data-jcp
 ```
 
 Verify CUDA on a GPU allocation:
 
 ```bash
 srun --partition=rocky --gpus=1 --time=00:10:00 \
-  .venv/bin/python -c 'import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))'
+  conda run -n pinn-small-data-jcp python \
+  -c 'import torch; print(torch.cuda.is_available(), torch.cuda.get_device_name(0))'
 ```
 
 ## Submit the complete pipeline
@@ -52,6 +51,7 @@ SLURM_ACCOUNT=MY_ACCOUNT \
 SLURM_CPU_PARTITION=rocky \
 SLURM_GPU_PARTITION=rocky \
 JCP_GPU_COUNT=1 \
+JCP_CONDA_ENV=pinn-small-data-jcp \
 bash slurm/submit_pipeline.sh
 ```
 
@@ -68,8 +68,12 @@ PINN_SUBMISSION=$(sbatch --parsable --account=MY_ACCOUNT --partition=rocky \
 )
 PINN_JOB=${PINN_SUBMISSION%%;*}
 
+CLASSICAL_SUBMISSION=$(sbatch --parsable --account=MY_ACCOUNT --partition=rocky \
+  --dependency=afterok:${PINN_JOB} slurm/run_classical_array.sbatch)
+CLASSICAL_JOB=${CLASSICAL_SUBMISSION%%;*}
+
 sbatch --account=MY_ACCOUNT --partition=rocky \
-  --dependency=afterok:${PINN_JOB} slurm/run_classical_array.sbatch
+  --dependency=afterok:${CLASSICAL_JOB} slurm/merge_results.sbatch
 ```
 
 Slurm exposes the allocated device through `CUDA_VISIBLE_DEVICES`; the script
@@ -84,6 +88,12 @@ tail -f slurm/logs/jcp-data-<job-id>.out
 scancel <job-id>
 ```
 
-The runners are resumable. Re-submitting a completed task skips rows whose
-configuration IDs are already present. Do not launch two jobs for the same test
-and stage simultaneously because both would write the same result CSV.
+Array task `0` is Test 1 / seed 101, tasks `0`--`9` cover Test 1, `10`--`19`
+cover Test 2, `20`--`29` cover Test 3, and `30`--`39` cover Test 4. Every task
+writes a separate `*_seed<seed>.csv`, so concurrent writes are safe. The final
+merge job creates the canonical `unified_test*.csv` files.
+
+The runners are resumable. Re-submitting a completed array task skips rows
+whose configuration IDs are already present. The configuration ID includes the
+epoch count, so a 50,000-epoch run cannot be mistaken for an older 10,000-epoch
+run.

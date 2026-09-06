@@ -487,7 +487,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--experiment-name", default="zero_label_test12")
     parser.add_argument("--test", choices=("test1", "test2", "all"), default="all")
     parser.add_argument("--budgets", default="0,20")
-    parser.add_argument("--seeds", default="101,102,103")
+    parser.add_argument("--seeds", default="101,102,103,104,105,106,107,108,109,110")
     parser.add_argument("--balancers", default="h")
     parser.add_argument("--epochs", type=int, default=50_000)
     parser.add_argument("--collocation-points", type=int, default=128)

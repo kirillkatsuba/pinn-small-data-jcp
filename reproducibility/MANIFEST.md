@@ -4,7 +4,8 @@
 
 - `paper_jcp/unified_protocol.py`: common PINN, samplers, losses, metrics.
 - `paper_jcp/run_unified_protocol.py`: resumable final experiment runner.
-- `paper_jcp/run_publication_suite.py`: frozen Python launcher for Tests 1--4.
+- `paper_jcp/run_publication_suite.py`: candidate Python launcher for Tests 1--4.
+- `paper_jcp/merge_publication_shards.py`: deterministic seed-shard merger.
 - `paper_jcp/classical_baselines.py`: XGB/SVM/GP tuning utilities.
 - `paper_jcp/two_phase_fv.py`: conservative finite-volume reference solver.
 - `paper_jcp/generate_corrected_benchmarks.py`: Tests 2--4 data generation.
@@ -12,6 +13,8 @@
 - `paper_jcp/build_final_metrics_report.py`: complete result tables.
 - `benchmarking/pinn_ablation_utils.py`: shared metric functions.
 - `loss_balancong_algorithms/algos.py`: H/HO loss balancer.
+- `environment.yml`: Conda/CUDA environment specification.
+- `slurm/`: data, training-array, merge, and submission scripts.
 
 ## Required tests
 
@@ -20,6 +23,7 @@
 - `tests/test_corrected_unified_protocol.py`
 - `tests/test_classical_tuning.py`
 - `tests/test_generator_inputs.py`
+- `tests/test_publication_defaults.py`
 - `tests/test_device_execution.py`
 
 ## Tracked experimental artifacts

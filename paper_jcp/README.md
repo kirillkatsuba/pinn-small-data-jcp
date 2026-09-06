@@ -2,8 +2,8 @@
 
 This directory contains the unified implementation, experiment outputs, plots,
 and Elsevier/JCP manuscript for the small-data PINN study. The public entry
-point is `run_publication_suite.py`; it freezes the configuration used in the
-reported Tests 1--4.
+point is `run_publication_suite.py`; its current candidate defaults use ten
+seeds and 50,000 PINN epochs.
 
 ## Core files
 
@@ -13,7 +13,7 @@ reported Tests 1--4.
 - `two_phase_fv.py`: conservative finite-volume reference solver.
 - `generate_corrected_benchmarks.py`: deterministic Tests 2--4 generator.
 - `run_unified_protocol.py`: configurable, resumable experiment runner.
-- `run_publication_suite.py`: frozen publication launcher.
+- `run_publication_suite.py`: current candidate launcher.
 - `run_zero_label_experiment.py`: additional `N=0,20` experiment.
 - `plot_model_comparison.py`: GT/PINN/XGB/SVM/GP comparison figures.
 - `plot_training_history_comparison.py`: raw/weighted losses and adaptive
@@ -32,7 +32,7 @@ PINN training and inference accept:
 Deterministic execution is enabled by default; use `--no-deterministic` only
 for an explicitly separate speed experiment. A single GPU process must use
 `--workers 1`. Classical baselines and finite-volume generation remain
-CPU-bound in the frozen publication protocol.
+CPU-bound in the experimental protocol.
 
 ## Minimal workflow
 
@@ -43,6 +43,7 @@ python3 -B -m unittest \
   tests.test_heat_equation tests.test_two_phase_fv \
   tests.test_corrected_unified_protocol tests.test_classical_tuning \
   tests.test_generator_inputs \
+  tests.test_publication_defaults \
   tests.test_device_execution -v
 
 python3 -B paper_jcp/generate_corrected_benchmarks.py \

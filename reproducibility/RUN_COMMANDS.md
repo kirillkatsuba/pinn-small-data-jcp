@@ -15,6 +15,7 @@ python3 -B -m unittest \
   tests.test_corrected_unified_protocol \
   tests.test_classical_tuning \
   tests.test_generator_inputs \
+  tests.test_publication_defaults \
   tests.test_device_execution -v
 ```
 
@@ -36,7 +37,9 @@ python3 -B paper_jcp/generate_corrected_benchmarks.py \
   --test4-parameter-dir reproducibility/data_inputs/test4
 ```
 
-## Финальные эксперименты
+## Текущий расширенный эксперимент
+
+По умолчанию launcher использует 10 seed (`101`--`110`) и 50,000 эпох PINN.
 
 Test 1:
 
@@ -96,7 +99,7 @@ python3 -B paper_jcp/plot_model_comparison.py \
 ```bash
 python3 -B paper_jcp/run_zero_label_experiment.py \
   --experiment-name zero_label_test12_e50k_nr128 \
-  --test all --budgets 0,20 --seeds 101,102,103 \
+  --test all --budgets 0,20 --seeds 101,102,103,104,105,106,107,108,109,110 \
   --balancers h,ho --epochs 50000 --collocation-points 128 \
   --hidden-dim 128 --depth 6 --activation gelu \
   --learning-rate 0.003 --min-learning-rate 0.00001 \

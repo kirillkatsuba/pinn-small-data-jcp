@@ -1,7 +1,8 @@
 # Reproducibility package
 
-This directory is the authoritative entry point for reproducing the four final
-experiments reported in the JCP manuscript.
+This directory records the reference experiments currently reported in the JCP
+manuscript. The new cluster candidate run is intentionally longer and will be
+promoted to the manuscript only after its results are analysed.
 
 ## Contents
 
@@ -13,8 +14,8 @@ experiments reported in the JCP manuscript.
 - `ENVIRONMENT.md`: reference hardware, package versions, and device policy.
 - `verify_results.py`: tolerance-based comparison of regenerated metrics with
   immutable publication snapshots.
-- `../paper_jcp/run_publication_suite.py`: Python entry point for the frozen
-  Test 1--4 training protocol.
+- `../paper_jcp/run_publication_suite.py`: Python entry point for the current
+  ten-seed, 50,000-epoch candidate protocol.
 
 Run commands from the repository root. The publication runner is resumable:
 the underlying experiment code skips already complete rows.
@@ -28,7 +29,13 @@ The available test selector is `test1`, `test2`, `test3`, `test4`, or `all`;
 the stage selector is `pinn`, `classical`, or `all`. Add `--dry-run` to print
 the expanded commands without executing them.
 
-## Experimental contract
+## Current cluster candidate
+
+The launcher now defaults to seeds `101`--`110` and 50,000 PINN epochs. Slurm
+runs one test/seed pair per array task and merges the seed shards after all
+training jobs finish.
+
+## Reference snapshot contract
 
 | Item | Fixed value |
 |---|---|
@@ -73,3 +80,6 @@ After a completed run, verify all numerical metrics with:
 ```bash
 python3 -B reproducibility/verify_results.py --suite all
 ```
+
+This verifier targets the existing three-seed, 10,000-epoch snapshots. It is
+not a pass/fail check for the new 50,000-epoch candidate results.

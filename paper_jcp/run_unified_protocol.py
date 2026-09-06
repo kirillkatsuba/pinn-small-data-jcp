@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import asdict
@@ -135,11 +136,13 @@ def run_test(
     classical_methods: tuple[str, ...],
     classical_tuning_profile: str,
     classical_cv: str,
+    result_suffix: str,
 ) -> str:
     generated = GENERATED_ROOT / experiment_name
     checkpoints = EXPERIMENTS_ROOT / experiment_name / "checkpoints"
     histories = EXPERIMENTS_ROOT / experiment_name / "histories"
-    output_path = generated / f"unified_{test_name}.csv"
+    suffix = f"_{result_suffix}" if result_suffix else ""
+    output_path = generated / f"unified_{test_name}{suffix}.csv"
     generated.mkdir(parents=True, exist_ok=True)
     existing = pd.read_csv(output_path) if output_path.exists() else pd.DataFrame()
     rows = existing.to_dict("records") if not existing.empty else []
@@ -379,7 +382,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--budgets", default=",".join(str(value) for value in LABEL_BUDGETS)
     )
-    parser.add_argument("--seeds", default="11,22,33,44,55")
+    parser.add_argument("--seeds", default="101,102,103,104,105,106,107,108,109,110")
     parser.add_argument("--balancers", default="h,ho")
     parser.add_argument("--time-fraction", type=float, default=0.7)
     parser.add_argument("--time-bins", type=int, default=10)
@@ -409,7 +412,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--activation", choices=("tanh", "silu", "gelu"), default="tanh"
     )
-    parser.add_argument("--epochs", type=int, default=20_000)
+    parser.add_argument("--epochs", type=int, default=50_000)
     parser.add_argument("--learning-rate", type=float, default=1e-3)
     parser.add_argument("--min-learning-rate", type=float, default=1e-5)
     parser.add_argument("--optimizer", choices=("adam", "adamw"), default="adam")
@@ -431,6 +434,11 @@ def parse_args() -> argparse.Namespace:
         "--device",
         default="cpu",
         help="PINN device: cpu, cuda, cuda:0, mps, or auto.",
+    )
+    parser.add_argument(
+        "--result-suffix",
+        default="",
+        help="Optional safe suffix for per-job CSV shards, for example seed101.",
     )
     parser.add_argument(
         "--deterministic",
@@ -469,6 +477,8 @@ def main() -> None:
     classical_methods = tuple(value.upper() for value in comma_strings(args.classical_methods))
     if any(value not in LABEL_BUDGETS for value in budgets):
         raise ValueError(f"Budgets must be selected from {LABEL_BUDGETS}")
+    if args.result_suffix and not re.fullmatch(r"[A-Za-z0-9_-]+", args.result_suffix):
+        raise ValueError("result suffix may contain only letters, digits, '_' and '-'")
     if any(value not in {"h", "ho"} for value in balancers):
         raise ValueError("Balancers must be h and/or ho")
     if not classical_methods or any(
@@ -558,6 +568,7 @@ def main() -> None:
         classical_methods=classical_methods,
         classical_tuning_profile=args.classical_tuning_profile,
         classical_cv=args.classical_cv,
+        result_suffix=args.result_suffix,
     )
     if len(tests) == 1:
         print(run_test(tests[0], **arguments))

@@ -10,9 +10,8 @@
 set -euo pipefail
 
 PROJECT_DIR="${PROJECT_DIR:-${SLURM_SUBMIT_DIR}}"
-VENV_PATH="${VENV_PATH:-${PROJECT_DIR}/.venv}"
 cd "${PROJECT_DIR}"
-source "${VENV_PATH}/bin/activate"
+source slurm/activate_conda.sh
 
 export PYTHONUNBUFFERED=1
 export OMP_NUM_THREADS=1
