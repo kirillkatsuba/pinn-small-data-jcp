@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=jcp-pinn
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=24G
-#SBATCH --gres=gpu:1
-#SBATCH --time=72:00:00
+#SBATCH --partition=rocky
+#SBATCH --gpus=1
+#SBATCH --time=10:00:00
 #SBATCH --array=1-4
 #SBATCH --output=slurm/logs/%x-%A_%a.out
 #SBATCH --error=slurm/logs/%x-%A_%a.err

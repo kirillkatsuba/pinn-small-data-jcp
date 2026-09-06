@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 #SBATCH --job-name=jcp-classical
 #SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=32G
-#SBATCH --time=72:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --partition=rocky
+#SBATCH --time=1:00:00
 #SBATCH --array=1-4
 #SBATCH --output=slurm/logs/%x-%A_%a.out
 #SBATCH --error=slurm/logs/%x-%A_%a.err
