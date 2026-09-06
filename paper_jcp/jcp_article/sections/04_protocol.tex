@@ -1,0 +1,40 @@
+\section{Experimental protocol}
+\label{sec:protocol}
+
+\subsection{Nested small-data designs and time regions}
+
+The budgets are \(N\in\{20,50,100,200,500,1000\}\), and seeds 101, 102, and 103 independently determine the labelled selection and PINN initialization. Within each seed, selections are nested: the first 20 labels are contained in the first 50, and so forth. Labels are restricted to \(t\le0.7t_{\max}\) and balanced over ten temporal bins, preventing accidental concentration at one time.
+
+Two fixed disjoint evaluation regions are used:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{interpolation}: unseen points within \(0\le t\le0.7t_{\max}\);
+    \item \textbf{extrapolation}: unseen points within \(0.7t_{\max}<t\le t_{\max}\).
+\end{itemize}
+Residual points for the primary PINN cover the complete physical time domain. Current labels and evaluation points are excluded from their sampling pool, and no solution values are attached to them. Consequently, the second region measures equation-assisted temporal forecasting: the future PDE is known, while future states are not.
+
+Test 4 contains approximately 41 million possible space--time--parameter states. To keep data handling reproducible, a deterministic 100,000-point pool is materialized across all 100 parameter combinations, with equal capacity assigned to the labelled-time and later-time portions. Its interpolation and extrapolation tests are sampled separately from this pool.
+
+\subsection{Optimization and model selection}
+
+All PINNs are trained for 10,000 full-label epochs with Adam, an initial learning rate of \(3\times10^{-3}\), cosine decay to \(10^{-5}\), and gradient clipping at one. The checkpoint with the lowest balanced training objective is retained. A fixed set of 512 unlabelled physics-validation points is recorded to diagnose IBC/PDE optimization but supplies no reference solution values and is not the checkpoint criterion.
+
+Configuration was chosen sequentially rather than through a prohibitively large Cartesian search. The recorded screening used budgets \(N=50,200\), seeds 101--103, and 5,000 epochs: first the activation, then the H-PINN gate targets, the HO-PINN floor, residual ratio, and learning rate. Width 128 and depth six were fixed before this screen; no completed width/depth grid is claimed. The resulting configuration was carried unchanged to the corrected finite-volume benchmarks and extended to 10,000 epochs. \ref{app:tuning} gives every screened value and the selection rule.
+
+The same numerical seeds 101--103 appear in the screening and final experiments. For Tests 2--4 the corrected solution fields were generated only after the initial screen, which limits direct target reuse, but the final three-seed estimates are nevertheless post-selection rather than an untouched confirmatory sample. We therefore interpret mean \(\pm\) standard deviation as a reproducibility summary, not a formal confidence interval or significance test. This limitation is stated explicitly rather than treating the seeds as independent of model development.
+
+Classical preprocessing and hyperparameter selection are fit inside each training fold. The flow searches use only forward-time validation, making them conservative with respect to the extrapolation task. Each final row records the selected parameters and cross-validation score, and all completed method--budget--seed combinations are retained in tidy CSV form.
+
+\subsection{Evaluation metrics}
+
+For a target \(y\), the two main metrics are
+\begin{equation}
+    \mathrm{MSE}
+    =\frac{1}{m}\sum_{i=1}^{m}(y_i-\widehat y_i)^2,
+    \qquad
+    \Rtwo
+    =1-\frac{\sum_i(y_i-\widehat y_i)^2}
+    {\sum_i(y_i-\overline y)^2}.
+\end{equation}
+Test 1 is ranked by temperature \(\Rtwo\). For Tests 2--4, water-saturation \(\Rtwo\) remains the primary statistic because it measures reconstruction of the moving front; water-saturation MSE and separate pressure \(\Rtwo\)/MSE are also reported in the main text. We intentionally avoid a macro-average over pressure and saturation because smooth pressure can conceal front-reconstruction error. Root MSE, MAE, relative \(L^2\), standard-deviation-normalized RMSE, physical diagnostics, and fitting time are reported in \ref{app:additional_metrics}. Mean and sample standard deviation are computed over the three paired seeds.
+
+Physical diagnostics are the fraction of predictions outside \([-10^{-3},1+10^{-3}]\) for either saturation and the closure error \(\lvert \widehat S_w+\widehat S_o-1\rvert\). Wall-clock fitting time includes the complete classical hyperparameter search but excludes reference-solver generation for every method.

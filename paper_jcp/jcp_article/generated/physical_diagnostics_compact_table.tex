@@ -1,0 +1,30 @@
+\begin{table}[H]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{1.5pt}
+\caption{Physical diagnostics in the forecasting region at $N=50$ (mean $\pm$ sample standard deviation). The violation rate is the fraction of predictions outside $[-10^{-3},1+10^{-3}]$ for either saturation; closure is $|\widehat S_w+\widehat S_o-1|$.}
+\label{tab:physical_diagnostics}
+\begin{tabular}{@{}llcc@{}}
+\toprule
+Test & Method & Violation rate & Closure MAE \\
+\midrule
+T2 & H & $0.0000\pm0.0000$ & $\num{9.59e-09}\pm\num{1.05e-09}$ \\
+T2 & HO & $0.0000\pm0.0000$ & $\num{9.52e-09}\pm\num{3.61e-10}$ \\
+T2 & XGB & $0.1231\pm0.0999$ & $\num{2.67e-02}\pm\num{7.93e-03}$ \\
+T2 & SVR & $0.1858\pm0.1306$ & $\num{8.47e-03}\pm\num{6.24e-03}$ \\
+T2 & GP & $0.0520\pm0.0747$ & $\num{2.14e-07}\pm\num{3.49e-07}$ \\
+\addlinespace[1pt]
+T3 & H & $0.0000\pm0.0000$ & $\num{1.02e-08}\pm\num{3.03e-09}$ \\
+T3 & HO & $0.0000\pm0.0000$ & $\num{9.54e-09}\pm\num{2.42e-09}$ \\
+T3 & XGB & $0.0527\pm0.0655$ & $\num{6.96e-02}\pm\num{3.09e-02}$ \\
+T3 & SVR & $0.1573\pm0.0804$ & $\num{1.13e-02}\pm\num{9.49e-03}$ \\
+T3 & GP & $0.0373\pm0.0419$ & $\num{1.75e-08}\pm\num{1.18e-08}$ \\
+\addlinespace[1pt]
+T4 & H & $0.0000\pm0.0000$ & $\num{8.09e-09}\pm\num{7.55e-10}$ \\
+T4 & HO & $0.0000\pm0.0000$ & $\num{8.74e-09}\pm\num{1.11e-09}$ \\
+T4 & XGB & $0.1078\pm0.1124$ & $\num{1.76e-02}\pm\num{2.83e-03}$ \\
+T4 & SVR & $0.0133\pm0.0231$ & $\num{2.38e-03}\pm\num{2.06e-03}$ \\
+T4 & GP & $0.0551\pm0.0512$ & $\num{1.32e-08}\pm\num{4.64e-09}$ \\
+\bottomrule
+\end{tabular}
+\end{table}

@@ -1,0 +1,146 @@
+\section{PDE benchmarks and reference solutions}
+\label{sec:benchmarks}
+
+\subsection{Test 1: periodic heat equation}
+
+The analytical benchmark is
+\begin{equation}
+\begin{cases}
+    \partial_t T-\partial_{xx}T=0,
+        &(t,x)\in[0,0.05]\times[0,1],\\
+    T(0,x)=2+\sin(2\pi x)+\cos(4\pi x),\\
+    T(t,0)=T(t,1).
+\end{cases}
+\label{eq:heat}
+\end{equation}
+Its exact solution is
+\begin{equation}
+    T(t,x)=2+e^{-4\pi^2t}\sin(2\pi x)
+    +e^{-16\pi^2t}\cos(4\pi x).
+\end{equation}
+This test isolates small-data reconstruction without numerical reference error.
+
+\subsection{Tests 2--4: heterogeneous two-phase flow}
+
+We consider incompressible, immiscible, gravity-free, and capillary-free water--oil displacement on \(\Omega=[0,1]^2\). Let \(S_\alpha(t,\boldsymbol x)\) be the fraction of pore volume occupied by phase \(\alpha\in\{w,o\}\), \(\phi(\boldsymbol x)\) the porosity, and \(\boldsymbol u_\alpha\) the Darcy volumetric flux. For any control volume \(D\subset\Omega\), phase volume is
+\begin{equation}
+    V_\alpha(D,t)=\int_D\phi(\boldsymbol x)
+    S_\alpha(t,\boldsymbol x)\,\mathrm d\boldsymbol x.
+\end{equation}
+Incompressibility and absence of interior sources give
+\begin{equation}
+    \frac{\mathrm d}{\mathrm dt}V_\alpha(D,t)
+    +\int_{\partial D}\boldsymbol u_\alpha\cdot\boldsymbol n
+    \,\mathrm d\Gamma=0,
+\end{equation}
+and hence the local conservation laws and saturation closure
+\begin{equation}
+    \partial_t(\phi S_\alpha)+\nabla\cdot\boldsymbol u_\alpha=0,
+    \qquad S_w+S_o=1.
+    \label{eq:conservation}
+\end{equation}
+
+Because capillary pressure is neglected, both phases share pressure \(p\). Their Darcy laws are
+\begin{equation}
+    \boldsymbol u_\alpha
+    =-K(\boldsymbol x)\frac{k_{r\alpha}(S_\alpha)}{\mu_\alpha}\nabla p
+    =-K(\boldsymbol x)\lambda_\alpha(S_\alpha)\nabla p,
+    \qquad \alpha\in\{w,o\},
+    \label{eq:darcy}
+\end{equation}
+where \(K\) is absolute permeability, \(k_{r\alpha}\) is relative permeability, \(\mu_\alpha\) is viscosity, and \(\lambda_\alpha=k_{r\alpha}/\mu_\alpha\) is phase mobility. Summing Eq.~\eqref{eq:conservation} and using saturation closure gives
+\begin{equation}
+    \nabla\cdot\boldsymbol u_t=0,
+    \qquad
+    \boldsymbol u_t=\boldsymbol u_w+\boldsymbol u_o
+    =-K(\lambda_w+\lambda_o)\nabla p,
+    \label{eq:total_flux}
+\end{equation}
+and the nonlinear elliptic pressure equation
+\begin{equation}
+    \nabla\cdot\left[K(\boldsymbol x)
+    (\lambda_w+\lambda_o)\nabla p\right]=0.
+    \label{eq:pressure_equation}
+\end{equation}
+Equivalently, with fractional flow \(f_\alpha=\lambda_\alpha/(\lambda_w+\lambda_o)\), transport can be written
+\begin{equation}
+    \phi\,\partial_t S_\alpha
+    +\nabla\cdot(f_\alpha\boldsymbol u_t)=0.
+    \label{eq:fractional_flow}
+\end{equation}
+
+We use Corey-type relative permeabilities \cite{corey1954interrelation}
+\begin{equation}
+    k_{rw}=k_w^0 S_w^{p_w},
+    \qquad
+    k_{ro}=k_o^0 S_o^{p_o}.
+    \label{eq:corey}
+\end{equation}
+The fixed properties are \(\phi=0.1\), \(\mu_w=1\), and \(\mu_o=3\). Initial and boundary conditions are
+\begin{align}
+    S_w(0,\boldsymbol x)&=0, & S_o(0,\boldsymbol x)&=1,
+    &&\boldsymbol x\in\Omega,\label{eq:flow_ic}\\
+    p(t,0,y)&=1, &p(t,1,y)&=0,
+    &&0\le y\le1,\label{eq:pressure_bc}\\
+    \boldsymbol u_w\cdot\boldsymbol n
+    &=\boldsymbol u_o\cdot\boldsymbol n=0,
+    &&&y\in\{0,1\},\label{eq:noflow_bc}\\
+    \boldsymbol u_o\cdot\boldsymbol n&=0,
+    &&&x=0.\label{eq:inlet_bc}
+\end{align}
+Equation~\eqref{eq:inlet_bc} specifies pure-water injection at the left boundary; water inflow magnitude follows from the imposed pressure difference. At the right boundary, the outward phase composition is determined by the interior upwind state.
+
+The PINN predicts \((p,S_o,S_w,\boldsymbol u_o,\boldsymbol u_w)\) and enforces the phase formulation directly. At a residual point, its residual vector is
+\begin{equation}
+\boldsymbol r_\theta=
+\begin{bmatrix}
+\phi\,\partial_t\widehat S_w+\nabla\cdot\widehat{\boldsymbol u}_w\\
+\phi\,\partial_t\widehat S_o+\nabla\cdot\widehat{\boldsymbol u}_o\\
+\widehat{\boldsymbol u}_w+K\,k_{rw}(\widehat S_w)\nabla\widehat p/\mu_w\\
+\widehat{\boldsymbol u}_o+K\,k_{ro}(\widehat S_o)\nabla\widehat p/\mu_o\\
+\widehat S_w+\widehat S_o-1
+\end{bmatrix},
+\qquad
+\Lpde=\frac{1}{N_r}\sum_{i=1}^{N_r}
+\lVert\boldsymbol r_\theta(\boldsymbol z_i^{,r})\rVert_2^2.
+\label{eq:flow_pinn_residual}
+\end{equation}
+The IBC loss is the mean squared error in Eqs.~\eqref{eq:flow_ic}--\eqref{eq:inlet_bc}; the data loss is the mean of the summed squared errors in \(p,S_o,S_w\). Thus the PINN and finite-volume solver use the same continuum model while enforcing it through different numerical representations.
+
+Tests 2 and 3 use \((p_w,p_o,k_w^0,k_o^0)=(2,4,1,0.3)\). Test 2 has a moderate permeability contrast \(K_{\max}/K_{\min}\approx24\) and final time 0.3. Test 3 uses a much more heterogeneous field with \(K_{\max}/K_{\min}\approx 9.0\times10^4\), producing an irregular saturation front; its final time is 0.05. These different horizons were chosen so that both problems contain a developed but not fully displaced front.
+
+Test 4 uses a third heterogeneous field and varies the Corey parameters:
+\begin{equation}
+\begin{aligned}
+    p_w&\in[1.5,2.5], &p_o&\in[3,5],\\
+    k_w^0&\in[0.9,1.1], &k_o^0&\in[0.2,0.4].
+\end{aligned}
+\end{equation}
+The input is therefore
+\begin{equation}
+    \boldsymbol z=(t,x,y,p_w,p_o,k_w^0,k_o^0)\in\mathbb R^7,
+\end{equation}
+and the target is \((p,S_o,S_w)\). One hundred parameter combinations are simulated to final time 0.2. Permeability is intentionally not included in the network input in any flow test. Its local value is attached only to each residual point as the coefficient \(K(\boldsymbol x)\) in Eq.~\eqref{eq:darcy}.
+
+\subsection{Conservative reference discretization}
+
+Tests 2--4 use a corrected cell-centred finite-volume solver on a \(64\times64\) grid. At every adaptive transport substep, pressure is recomputed from Eq.~\eqref{eq:pressure_equation}. Harmonic face transmissibilities handle permeability jumps. Phase fluxes use upstream fractional flow from Eq.~\eqref{eq:fractional_flow}, and saturation is advanced explicitly with an adaptive CFL limit of 0.2 after division by cell pore volume \(\phi\,\Delta x\Delta y\). The initial state at \(t=0\), pressure, and saturations are stored synchronously at 101 output times. This construction corrects the mobility, pore-volume, time-alignment, and boundary inconsistencies of the legacy generator. The reference simulation supplies labels and evaluation targets; it is not counted as a competing surrogate.
+
+\begin{table*}[t]
+\centering
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\caption{Final benchmarks. All tests use width 128, depth six, 10,000 PINN epochs, the same label budgets, and seeds 101--103.}
+\label{tab:configuration}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Property & Test 1 & Test 2 & Test 3 & Test 4\\
+\midrule
+Input dimension & 2 & 3 & 3 & 7\\
+Primary output & Temperature & Water saturation & Water saturation & Water saturation\\
+Final time & 0.05 & 0.30 & 0.05 & 0.20\\
+Reference & Analytical & FV, \(64^2\) & FV, \(64^2\) & 100 FV runs, \(64^2\)\\
+Test size (interp./forecast) & 29,041 / 12,336 & 1,500 / 1,500 & 1,500 / 1,500 & 1,500 / 1,500\\
+\bottomrule
+\end{tabular}
+\end{table*}

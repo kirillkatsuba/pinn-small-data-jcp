@@ -1,0 +1,27 @@
+\section{Introduction}
+\label{sec:introduction}
+
+High-fidelity partial differential equation (PDE) simulations and physical measurements are expensive sources of labelled states. This is especially consequential when a surrogate is required for uncertainty quantification, optimization, inverse modelling, or parameter sweeps, where thousands of evaluations may be needed. The relevant learning problem is therefore often not large-scale prediction, but accurate reconstruction from a small number of solution observations.
+
+Classical regressors remain strong candidates in this regime. Boosted trees \cite{chen2016xgboost}, support-vector regression \cite{drucker1997support}, and Gaussian processes \cite{rasmussen2006gaussian} can fit low-dimensional responses from limited data, are comparatively inexpensive to train, and provide important baselines for any claimed benefit of neural surrogates \cite{friedman2001greedy,chen2016xgboost,drucker1997support,rasmussen2006gaussian}. A physics-informed neural network (PINN) uses additional sources of information: the initial and boundary conditions and the residuals of the governing equations evaluated through automatic differentiation \cite{Raissi2019,Karniadakis2021}. Residual evaluations do not require additional high-fidelity solution labels because they can be computed from the differential equations at unlabelled input points. They may consequently regularize an underdetermined sparse-data fit, but they also introduce a difficult multi-objective optimization problem and substantially greater training cost \cite{Wang2022}.
+
+Physics-informed and physics-constrained surrogates have already been demonstrated for sparse subsurface data assimilation, porous-media flow, and parametric fluid systems \cite{He2020,Hanna2022,Sun2020}. Our objective is complementary: rather than merely establishing that a PINN can represent a particular solution, we determine when equation-based supervision changes the data-efficiency ranking relative to strong non-neural surrogates.
+
+Most PINN studies ask whether a neural network can solve or reconstruct a particular PDE. Although optimization and computational efficiency are active research topics, the practical comparison between label efficiency and fitting cost under a controlled small-data protocol is less commonly isolated. We therefore address the following question:
+\begin{quote}
+\emph{When the governing PDE is known but only a small number of solution labels is available, does physics-informed training produce a more accurate surrogate than carefully tuned conventional regression?}
+\end{quote}
+This framing separates label efficiency from fitting speed. A PINN may be worthwhile if it replaces additional simulator calls or measurements, even when optimizing it takes longer than fitting a classical model.
+
+To test this hypothesis, we consider a periodic heat equation and three two-phase porous-media flow problems. The flow tests progress from moderate heterogeneity to an irregular high-contrast permeability field and then to a seven-dimensional parametric input space. Water saturation is treated as the primary flow target because it contains a moving displacement front and is consistently harder to reconstruct than pressure. Every method receives exactly the same nested labelled designs. The first 70\% of each physical time interval contains the labels and an interpolation test, whereas the final 30\% is held out for temporal forecasting. The PINN may enforce the known PDE throughout the time interval, but it never observes future solution values. This is therefore a physics-assisted forecasting test, not pure data-only extrapolation.
+
+The main contributions are summarized as follows:
+\begin{enumerate}[leftmargin=*]
+    \item a common scarce-label protocol with six nested budgets from 20 to 1000, paired seeds, disjoint interpolation and temporal-forecasting tests, and identical labels for all methods;
+    \item a comparison of a fixed PINN backbone with training-only tuned XGBoost (XGB), radial-basis support-vector regression (SVR), and Gaussian-process regression (GP);
+    \item a hierarchical loss-weighting algorithm (H-PINN) that smoothly activates the data, initial/boundary-condition, and PDE objectives through exponential gates, together with a hierarchical--orthogonal extension (HO-PINN) that attenuates redundant lower-priority gradient directions;
+    \item corrected conservative finite-volume reference data for heterogeneous two-phase flow, including a 100-realization parametric benchmark;
+    \item evidence that PINNs provide a substantial advantage at 20--100 labels, particularly for water saturation and temporal forecasting, together with an explicit characterization of the interpolation regime in which GP catches up.
+\end{enumerate}
+
+The proposed loss weighting is a methodological contribution that makes the common PINN backbone trainable across problems with different loss scales. Nevertheless, the headline contribution of this JCP study is the controlled numerical evidence for, and the limits of, the small-data advantage. We provide the weighting formulas, explain the distinction between H-PINN and HO-PINN, and report the associated hyperparameter screening, but make no theoretical claim about convergence or optimality.

@@ -1,0 +1,44 @@
+\begin{table*}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{3.2pt}
+\caption{Complete Test 1 metrics at $N=50$ (mean $\pm$ sample standard deviation over seeds 101--103).}
+\label{tab:test1_secondary}
+\textbf{(a) Absolute errors}\par\smallskip
+\begin{tabular}{llccc}
+\toprule
+Region & Method & MSE & RMSE & MAE \\
+\midrule
+Interp. & H-PINN & $\num{2.12e-04}\,\pm\,\num{1.62e-04}$ & 0.0139\,$\pm$\,0.0053 & 0.0093\,$\pm$\,0.0035 \\
+Interp. & HO-PINN & $\num{2.27e-04}\,\pm\,\num{2.02e-04}$ & 0.0141\,$\pm$\,0.0063 & 0.0091\,$\pm$\,0.0039 \\
+Interp. & XGB & $\num{5.10e-02}\,\pm\,\num{1.53e-02}$ & 0.2242\,$\pm$\,0.0335 & 0.1273\,$\pm$\,0.0142 \\
+Interp. & SVM & $\num{1.16e-02}\,\pm\,\num{2.92e-03}$ & 0.1072\,$\pm$\,0.0138 & 0.0400\,$\pm$\,0.0061 \\
+Interp. & GP & $\num{5.71e-03}\,\pm\,\num{5.72e-03}$ & 0.0696\,$\pm$\,0.0360 & 0.0252\,$\pm$\,0.0098 \\
+\midrule
+Extrap. & H-PINN & $\num{5.14e-04}\,\pm\,\num{2.58e-04}$ & 0.0221\,$\pm$\,0.0064 & 0.0139\,$\pm$\,0.0040 \\
+Extrap. & HO-PINN & $\num{1.02e-03}\,\pm\,\num{6.87e-04}$ & 0.0308\,$\pm$\,0.0105 & 0.0190\,$\pm$\,0.0064 \\
+Extrap. & XGB & $\num{1.26e-02}\,\pm\,\num{2.89e-03}$ & 0.1119\,$\pm$\,0.0132 & 0.0943\,$\pm$\,0.0128 \\
+Extrap. & SVM & $\num{1.11e-02}\,\pm\,\num{7.97e-03}$ & 0.1014\,$\pm$\,0.0359 & 0.0827\,$\pm$\,0.0294 \\
+Extrap. & GP & $\num{8.33e-03}\,\pm\,\num{7.55e-03}$ & 0.0856\,$\pm$\,0.0390 & 0.0651\,$\pm$\,0.0302 \\
+\bottomrule
+\end{tabular}
+\par\medskip
+\textbf{(b) Coefficient of determination and normalized errors}\par\smallskip
+\begin{tabular}{llccc}
+\toprule
+Region & Method & $R^2$ & relative $L^2$ & NRMSE$_{\mathrm{std}}$ \\
+\midrule
+Interp. & H-PINN & 0.9990\,$\pm$\,0.0007 & 0.0068\,$\pm$\,0.0026 & 0.0299\,$\pm$\,0.0113 \\
+Interp. & HO-PINN & 0.9990\,$\pm$\,0.0009 & 0.0069\,$\pm$\,0.0031 & 0.0304\,$\pm$\,0.0136 \\
+Interp. & XGB & 0.7649\,$\pm$\,0.0706 & 0.1091\,$\pm$\,0.0163 & 0.4813\,$\pm$\,0.0719 \\
+Interp. & SVM & 0.9464\,$\pm$\,0.0135 & 0.0522\,$\pm$\,0.0067 & 0.2302\,$\pm$\,0.0295 \\
+Interp. & GP & 0.9737\,$\pm$\,0.0264 & 0.0339\,$\pm$\,0.0175 & 0.1495\,$\pm$\,0.0772 \\
+\midrule
+Extrap. & H-PINN & 0.9717\,$\pm$\,0.0142 & 0.0110\,$\pm$\,0.0032 & 0.1636\,$\pm$\,0.0473 \\
+Extrap. & HO-PINN & 0.9439\,$\pm$\,0.0378 & 0.0153\,$\pm$\,0.0052 & 0.2282\,$\pm$\,0.0777 \\
+Extrap. & XGB & 0.3049\,$\pm$\,0.1590 & 0.0558\,$\pm$\,0.0066 & 0.8299\,$\pm$\,0.0979 \\
+Extrap. & SVM & 0.3874\,$\pm$\,0.4383 & 0.0506\,$\pm$\,0.0179 & 0.7519\,$\pm$\,0.2664 \\
+Extrap. & GP & 0.5417\,$\pm$\,0.4154 & 0.0427\,$\pm$\,0.0195 & 0.6345\,$\pm$\,0.2893 \\
+\bottomrule
+\end{tabular}
+\end{table*}

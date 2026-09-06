@@ -1,0 +1,38 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.7pt}
+\caption{Secondary error metrics for Test 2 at $N=50$ (mean $\pm$ sample standard deviation over seeds 101--103).}
+\label{tab:secondary_test2}
+\begin{tabular}{@{}cllcccc@{}}
+\toprule
+Target & Region & Method & RMSE & MAE & Relative $L^2$ & NRMSE$_{\rm std}$ \\
+\midrule
+$p$ & Interp. & H & $0.0062\pm0.0019$ & $0.0034\pm0.0007$ & $0.0101\pm0.0031$ & $0.0178\pm0.0055$ \\
+$p$ & Interp. & HO & $0.0059\pm0.0016$ & $0.0033\pm0.0005$ & $0.0097\pm0.0026$ & $0.0170\pm0.0045$ \\
+$p$ & Interp. & XGB & $0.0582\pm0.0100$ & $0.0431\pm0.0069$ & $0.0947\pm0.0163$ & $0.1666\pm0.0287$ \\
+$p$ & Interp. & SVR & $0.0696\pm0.0029$ & $0.0577\pm0.0024$ & $0.1132\pm0.0047$ & $0.1993\pm0.0082$ \\
+$p$ & Interp. & GP & $0.0172\pm0.0032$ & $0.0117\pm0.0013$ & $0.0280\pm0.0053$ & $0.0493\pm0.0093$ \\
+\addlinespace[1pt]
+$p$ & Forecast & H & $0.0124\pm0.0019$ & $0.0088\pm0.0012$ & $0.0193\pm0.0030$ & $0.0347\pm0.0053$ \\
+$p$ & Forecast & HO & $0.0118\pm0.0012$ & $0.0085\pm0.0009$ & $0.0183\pm0.0018$ & $0.0328\pm0.0033$ \\
+$p$ & Forecast & XGB & $0.0566\pm0.0053$ & $0.0419\pm0.0033$ & $0.0880\pm0.0082$ & $0.1580\pm0.0147$ \\
+$p$ & Forecast & SVR & $0.1050\pm0.0303$ & $0.0860\pm0.0271$ & $0.1632\pm0.0472$ & $0.2930\pm0.0847$ \\
+$p$ & Forecast & GP & $0.0245\pm0.0054$ & $0.0183\pm0.0034$ & $0.0381\pm0.0085$ & $0.0685\pm0.0152$ \\
+\addlinespace[1pt]
+\midrule
+$S_w$ & Interp. & H & $0.0360\pm0.0089$ & $0.0151\pm0.0043$ & $0.2014\pm0.0499$ & $0.2305\pm0.0571$ \\
+$S_w$ & Interp. & HO & $0.0347\pm0.0075$ & $0.0144\pm0.0035$ & $0.1944\pm0.0422$ & $0.2225\pm0.0483$ \\
+$S_w$ & Interp. & XGB & $0.0887\pm0.0047$ & $0.0620\pm0.0056$ & $0.4968\pm0.0266$ & $0.5684\pm0.0304$ \\
+$S_w$ & Interp. & SVR & $0.0725\pm0.0081$ & $0.0500\pm0.0037$ & $0.4060\pm0.0456$ & $0.4646\pm0.0522$ \\
+$S_w$ & Interp. & GP & $0.0706\pm0.0091$ & $0.0469\pm0.0047$ & $0.3958\pm0.0511$ & $0.4528\pm0.0585$ \\
+\addlinespace[1pt]
+$S_w$ & Forecast & H & $0.0652\pm0.0108$ & $0.0420\pm0.0082$ & $0.2275\pm0.0376$ & $0.3510\pm0.0580$ \\
+$S_w$ & Forecast & HO & $0.0649\pm0.0109$ & $0.0408\pm0.0076$ & $0.2265\pm0.0379$ & $0.3494\pm0.0584$ \\
+$S_w$ & Forecast & XGB & $0.1267\pm0.0060$ & $0.1010\pm0.0080$ & $0.4418\pm0.0209$ & $0.6817\pm0.0322$ \\
+$S_w$ & Forecast & SVR & $0.1451\pm0.0170$ & $0.1171\pm0.0172$ & $0.5061\pm0.0594$ & $0.7809\pm0.0917$ \\
+$S_w$ & Forecast & GP & $0.1193\pm0.0316$ & $0.0919\pm0.0264$ & $0.4160\pm0.1101$ & $0.6418\pm0.1699$ \\
+\addlinespace[1pt]
+\bottomrule
+\end{tabular}
+\end{table*}

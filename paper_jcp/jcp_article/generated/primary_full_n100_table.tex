@@ -1,0 +1,24 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\caption{Complete primary $R^2$ comparison at $N=100$ (mean $\pm$ sample standard deviation over seeds 101--103). Test 1 uses temperature; Tests 2--4 use water saturation. Bold marks the highest mean in each row.}
+\label{tab:primary_full_n100}
+\begin{tabular}{@{}llccccc@{}}
+\toprule
+Test & Region & H-PINN & HO-PINN & XGB & SVR & GP \\
+\midrule
+T1 & Interp. & \textbf{$1.000\pm0.000$} & $0.999\pm0.001$ & $0.847\pm0.043$ & $0.993\pm0.004$ & \textbf{$1.000\pm0.000$} \\
+T1 & Forecast & \textbf{$0.969\pm0.009$} & $0.943\pm0.038$ & $0.584\pm0.121$ & $0.645\pm0.180$ & $-0.168\pm0.441$ \\
+\addlinespace[1pt]
+T2 & Interp. & \textbf{$0.977\pm0.009$} & $0.975\pm0.009$ & $0.741\pm0.047$ & $0.816\pm0.040$ & $0.859\pm0.045$ \\
+T2 & Forecast & $0.933\pm0.011$ & \textbf{$0.933\pm0.014$} & $0.460\pm0.030$ & $0.579\pm0.171$ & $0.511\pm0.084$ \\
+\addlinespace[1pt]
+T3 & Interp. & \textbf{$0.840\pm0.014$} & $0.836\pm0.022$ & $0.666\pm0.041$ & $0.616\pm0.035$ & $0.745\pm0.052$ \\
+T3 & Forecast & \textbf{$0.780\pm0.052$} & $0.771\pm0.055$ & $0.491\pm0.072$ & $-1.021\pm1.095$ & $0.483\pm0.126$ \\
+\addlinespace[1pt]
+T4 & Interp. & $0.715\pm0.008$ & \textbf{$0.720\pm0.017$} & $0.474\pm0.108$ & $0.258\pm0.052$ & $0.466\pm0.266$ \\
+T4 & Forecast & $0.725\pm0.037$ & \textbf{$0.737\pm0.038$} & $0.353\pm0.116$ & $0.212\pm0.102$ & $0.262\pm0.419$ \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,26 @@
+\begin{table*}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.6pt}
+\caption{Target-resolved performance at $N=50$ (mean $\pm$ sample standard deviation over seeds 101--103). The classical entry is the family with the highest mean $R^2$ in that row; its MSE is shown in the corresponding column. Bold marks the best mean across all five methods.}
+\label{tab:target_summary}
+\begin{tabular}{@{}cllcccccc@{}}
+\toprule
+Target & Test & Region & H $R^2$ & HO $R^2$ & Classical $R^2$ & H MSE & HO MSE & Classical MSE \\
+\midrule
+$S_w$ & T2 & Interp. & $0.945\pm0.025$ & \textbf{$0.949\pm0.022$} & GP $0.793\pm0.052$ & $\num{1.35e-03}\pm\num{6.18e-04}$ & \textbf{$\num{1.24e-03}\pm\num{5.28e-04}$} & $\num{5.05e-03}\pm\num{1.27e-03}$ \\
+$S_w$ & T2 & Forecast & $0.875\pm0.043$ & \textbf{$0.876\pm0.043$} & GP $0.569\pm0.228$ & $\num{4.33e-03}\pm\num{1.47e-03}$ & \textbf{$\num{4.30e-03}\pm\num{1.47e-03}$} & $\num{1.49e-02}\pm\num{7.87e-03}$ \\
+$S_w$ & T3 & Interp. & $0.713\pm0.025$ & \textbf{$0.716\pm0.034$} & GP $0.562\pm0.178$ & $\num{4.29e-03}\pm\num{3.71e-04}$ & \textbf{$\num{4.25e-03}\pm\num{5.09e-04}$} & $\num{6.56e-03}\pm\num{2.67e-03}$ \\
+$S_w$ & T3 & Forecast & \textbf{$0.657\pm0.033$} & $0.654\pm0.045$ & GP $0.470\pm0.147$ & \textbf{$\num{9.87e-03}\pm\num{9.63e-04}$} & $\num{9.96e-03}\pm\num{1.31e-03}$ & $\num{1.53e-02}\pm\num{4.24e-03}$ \\
+$S_w$ & T4 & Interp. & \textbf{$0.633\pm0.031$} & $0.631\pm0.028$ & GP $0.342\pm0.055$ & \textbf{$\num{4.37e-03}\pm\num{3.67e-04}$} & $\num{4.39e-03}\pm\num{3.35e-04}$ & $\num{7.82e-03}\pm\num{6.58e-04}$ \\
+$S_w$ & T4 & Forecast & \textbf{$0.680\pm0.040$} & $0.673\pm0.033$ & XGB $0.332\pm0.100$ & \textbf{$\num{8.48e-03}\pm\num{1.05e-03}$} & $\num{8.66e-03}\pm\num{8.81e-04}$ & $\num{1.77e-02}\pm\num{2.65e-03}$ \\
+\midrule
+$p$ & T2 & Interp. & $1.000\pm0.000$ & \textbf{$1.000\pm0.000$} & GP $0.998\pm0.001$ & $\num{4.11e-05}\pm\num{2.57e-05}$ & \textbf{$\num{3.71e-05}\pm\num{1.96e-05}$} & $\num{3.03e-04}\pm\num{1.14e-04}$ \\
+$p$ & T2 & Forecast & $0.999\pm0.000$ & \textbf{$0.999\pm0.000$} & GP $0.995\pm0.002$ & $\num{1.57e-04}\pm\num{4.86e-05}$ & \textbf{$\num{1.39e-04}\pm\num{2.75e-05}$} & $\num{6.22e-04}\pm\num{2.83e-04}$ \\
+$p$ & T3 & Interp. & \textbf{$0.991\pm0.002$} & \textbf{$0.991\pm0.003$} & GP $0.965\pm0.022$ & \textbf{$\num{8.06e-04}\pm\num{1.79e-04}$} & $\num{8.07e-04}\pm\num{2.24e-04}$ & $\num{3.11e-03}\pm\num{2.00e-03}$ \\
+$p$ & T3 & Forecast & $0.979\pm0.005$ & \textbf{$0.979\pm0.004$} & GP $0.956\pm0.018$ & $\num{2.03e-03}\pm\num{5.17e-04}$ & \textbf{$\num{2.00e-03}\pm\num{4.26e-04}$} & $\num{4.19e-03}\pm\num{1.69e-03}$ \\
+$p$ & T4 & Interp. & \textbf{$0.998\pm0.001$} & $0.998\pm0.001$ & GP $0.993\pm0.002$ & \textbf{$\num{2.68e-04}\pm\num{1.26e-04}$} & $\num{2.78e-04}\pm\num{1.19e-04}$ & $\num{1.01e-03}\pm\num{3.18e-04}$ \\
+$p$ & T4 & Forecast & $0.996\pm0.001$ & \textbf{$0.996\pm0.001$} & GP $0.992\pm0.003$ & $\num{5.42e-04}\pm\num{1.91e-04}$ & \textbf{$\num{5.09e-04}\pm\num{1.89e-04}$} & $\num{1.20e-03}\pm\num{4.06e-04}$ \\
+\bottomrule
+\end{tabular}
+\end{table*}

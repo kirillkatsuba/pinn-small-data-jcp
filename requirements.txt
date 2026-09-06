@@ -1,0 +1,12 @@
+# Core scientific stack used for the reported experiments.
+# PyTorch is installed separately from requirements-cpu.txt,
+# requirements-cuda124.txt, or PyPI on macOS.
+joblib==1.4.2
+matplotlib==3.10.0
+numba==0.63.1
+numpy==2.2.1
+pandas==2.2.3
+scikit-learn==1.6.0
+scipy==1.14.1
+tqdm==4.67.1
+xgboost==3.0.2

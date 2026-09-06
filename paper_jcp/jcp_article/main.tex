@@ -1,0 +1,91 @@
+\documentclass[final,5p,times,twocolumn]{elsarticle}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{siunitx}
+\usepackage{placeins}
+\usepackage{float}
+\usepackage{array}
+\usepackage{cuted}
+
+\captionsetup{font=small,labelfont=bf}
+\setlength{\textfloatsep}{10pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{8pt plus 2pt minus 2pt}
+
+\graphicspath{{figures/}}
+\journal{Journal of Computational Physics}
+
+\newcommand{\Ld}{\mathcal{L}_{\mathrm{data}}}
+\newcommand{\Libc}{\mathcal{L}_{\mathrm{ibc}}}
+\newcommand{\Lpde}{\mathcal{L}_{\mathrm{pde}}}
+\newcommand{\Rtwo}{\ensuremath{R^2}}
+
+\begin{document}
+\begin{frontmatter}
+
+\title{Physics-informed neural networks in the small-data regime: A controlled comparison with classical PDE surrogates}
+
+\author[hse]{Kirill Katsuba\corref{cor1}}
+\ead{katsubakirill18@gmail.com}
+\author[hse]{Oleg Rudenko}
+\ead{onrudenko@edu.hse.ru}
+\author[hse,vk]{Alexander Tarakanov}
+\ead{atarakanov@hse.ru}
+\cortext[cor1]{Corresponding author.}
+\affiliation[hse]{organization={Faculty of Computer Science, HSE University},
+                  city={Moscow},
+                  country={Russia}}
+\affiliation[vk]{organization={VK},
+                 city={Moscow},
+                 country={Russia}}
+
+\begin{abstract}
+High-fidelity PDE states are expensive labels for surrogate modelling. We ask whether physics-informed neural networks (PINNs) use such labels more efficiently than established small-sample regressors. A periodic heat equation and three increasingly difficult two-phase porous-media problems are evaluated with identical nested budgets of 20--1000 labelled states and three paired seeds. The flow study treats water saturation as the primary target because its moving front is substantially harder than pressure. H-PINN activates data, initial/boundary, and residual losses hierarchically; HO-PINN additionally downweights redundant lower-priority gradient directions. Both use one fixed backbone. Their competitors are target-wise tuned XGBoost, radial-basis support-vector regression, and Gaussian-process regression, selected only within the labelled training data by forward-time validation. At 20--100 labels, the best PINN has the highest mean primary $R^2$ in all 24 benchmark--region--budget comparisons. Over all six budgets it wins 43 of 48 comparisons and every temporal-forecasting comparison. At $N=50$, a classical model needs 2--20 times more labels to match the PINN mean, and in one forecasting case does not match it by $N=1000$. The advantage shrinks when interpolation labels become abundant: GP slightly surpasses PINN on one flow test at 500--1000 labels. PINN fitting is one to three orders of magnitude slower, so the benefit is label efficiency rather than optimizer efficiency. These results identify a reproducible regime in which governing-equation supervision compensates for scarce solution data, together with the regime in which a tuned classical surrogate is preferable.
+\end{abstract}
+
+\begin{keyword}
+physics-informed neural networks \sep small-data regime \sep surrogate modelling \sep porous-media flow \sep temporal extrapolation \sep Gaussian processes
+\end{keyword}
+
+\end{frontmatter}
+
+\input{sections/01_introduction}
+\input{sections/02_related_work}
+\input{sections/02_method}
+\input{sections/03_benchmarks}
+\input{sections/04_protocol}
+\input{sections/05_results}
+\input{sections/06_discussion}
+\input{sections/07_conclusion}
+
+\FloatBarrier
+\appendix
+\input{sections/appendix}
+
+\section*{Data and code availability}
+The repository contains the corrected finite-volume generator, unified training runner, stored experiment CSV files, checkpoints, labelled selections, and the script that regenerates every table and figure in this manuscript. A public archival URL and immutable release identifier will be inserted before submission.
+
+\section*{CRediT authorship contribution statement}
+\textbf{Kirill Katsuba:} Conceptualization, Methodology, Software, Investigation, Visualization, Writing -- original draft. \textbf{Oleg Rudenko:} Methodology, Validation, Writing -- review and editing. \textbf{Alexander Tarakanov:} Conceptualization, Supervision, Writing -- review and editing. Author roles will be confirmed before submission.
+
+\section*{Declaration of competing interest}
+The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+
+\section*{Funding}
+Funding information will be added before submission.
+
+\section*{Declaration of generative AI and AI-assisted technologies in the writing process}
+During preparation of this work, the authors used OpenAI Codex for code-assisted analysis, LaTeX drafting, and language editing. The authors reviewed and edited all generated material and take full responsibility for the content of the publication.
+
+\bibliographystyle{elsarticle-num}
+\renewcommand{\bibfont}{\small}
+\bibliography{references}
+
+\end{document}

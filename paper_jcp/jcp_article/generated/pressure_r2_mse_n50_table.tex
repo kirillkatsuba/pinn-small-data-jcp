@@ -1,0 +1,57 @@
+\begingroup
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{longtable}{lllcc}
+\caption{Held-out pressure $R^2$ and MSE at $N=50$ (mean $\pm$ sample standard deviation over seeds 101--103). Bold marks the highest $R^2$ and lowest MSE within each test--region block.}\label{tab:pressure_r2_mse_n50}\\
+\toprule
+Test & Region & Method & $R^2$ & MSE \\
+\midrule
+\endfirsthead
+\multicolumn{5}{c}{\tablename~\thetable{} continued} \\
+\toprule
+Test & Region & Method & $R^2$ & MSE \\
+\midrule
+\endhead
+\midrule
+\multicolumn{5}{r}{Continued on next page} \\
+\endfoot
+\bottomrule
+\endlastfoot
+Test 2 & Interp. & H-PINN & 1.000\,$\pm$\,0.000 & $\num{4.11e-05}\,\pm\,\num{2.57e-05}$ \\
+Test 2 & Interp. & HO-PINN & \textbf{1.000\,$\pm$\,0.000} & \textbf{$\num{3.71e-05}\,\pm\,\num{1.96e-05}$} \\
+Test 2 & Interp. & XGB & 0.972\,$\pm$\,0.009 & $\num{3.46e-03}\,\pm\,\num{1.11e-03}$ \\
+Test 2 & Interp. & SVM & 0.960\,$\pm$\,0.003 & $\num{4.85e-03}\,\pm\,\num{3.94e-04}$ \\
+Test 2 & Interp. & GP & 0.998\,$\pm$\,0.001 & $\num{3.03e-04}\,\pm\,\num{1.14e-04}$ \\
+\addlinespace[2pt]
+Test 2 & Extrap. & H-PINN & 0.999\,$\pm$\,0.000 & $\num{1.57e-04}\,\pm\,\num{4.86e-05}$ \\
+Test 2 & Extrap. & HO-PINN & \textbf{0.999\,$\pm$\,0.000} & \textbf{$\num{1.39e-04}\,\pm\,\num{2.75e-05}$} \\
+Test 2 & Extrap. & XGB & 0.975\,$\pm$\,0.005 & $\num{3.22e-03}\,\pm\,\num{5.80e-04}$ \\
+Test 2 & Extrap. & SVM & 0.909\,$\pm$\,0.053 & $\num{1.16e-02}\,\pm\,\num{6.78e-03}$ \\
+Test 2 & Extrap. & GP & 0.995\,$\pm$\,0.002 & $\num{6.22e-04}\,\pm\,\num{2.83e-04}$ \\
+\addlinespace[2pt]
+Test 3 & Interp. & H-PINN & \textbf{0.991\,$\pm$\,0.002} & \textbf{$\num{8.06e-04}\,\pm\,\num{1.79e-04}$} \\
+Test 3 & Interp. & HO-PINN & \textbf{0.991\,$\pm$\,0.003} & $\num{8.07e-04}\,\pm\,\num{2.24e-04}$ \\
+Test 3 & Interp. & XGB & 0.893\,$\pm$\,0.015 & $\num{9.50e-03}\,\pm\,\num{1.29e-03}$ \\
+Test 3 & Interp. & SVM & 0.850\,$\pm$\,0.018 & $\num{1.33e-02}\,\pm\,\num{1.59e-03}$ \\
+Test 3 & Interp. & GP & 0.965\,$\pm$\,0.022 & $\num{3.11e-03}\,\pm\,\num{2.00e-03}$ \\
+\addlinespace[2pt]
+Test 3 & Extrap. & H-PINN & 0.979\,$\pm$\,0.005 & $\num{2.03e-03}\,\pm\,\num{5.17e-04}$ \\
+Test 3 & Extrap. & HO-PINN & \textbf{0.979\,$\pm$\,0.004} & \textbf{$\num{2.00e-03}\,\pm\,\num{4.26e-04}$} \\
+Test 3 & Extrap. & XGB & 0.905\,$\pm$\,0.014 & $\num{9.05e-03}\,\pm\,\num{1.36e-03}$ \\
+Test 3 & Extrap. & SVM & 0.748\,$\pm$\,0.110 & $\num{2.41e-02}\,\pm\,\num{1.05e-02}$ \\
+Test 3 & Extrap. & GP & 0.956\,$\pm$\,0.018 & $\num{4.19e-03}\,\pm\,\num{1.69e-03}$ \\
+\addlinespace[2pt]
+Test 4 & Interp. & H-PINN & \textbf{0.998\,$\pm$\,0.001} & \textbf{$\num{2.68e-04}\,\pm\,\num{1.26e-04}$} \\
+Test 4 & Interp. & HO-PINN & 0.998\,$\pm$\,0.001 & $\num{2.78e-04}\,\pm\,\num{1.19e-04}$ \\
+Test 4 & Interp. & XGB & 0.916\,$\pm$\,0.017 & $\num{1.16e-02}\,\pm\,\num{2.35e-03}$ \\
+Test 4 & Interp. & SVM & 0.854\,$\pm$\,0.052 & $\num{2.00e-02}\,\pm\,\num{7.07e-03}$ \\
+Test 4 & Interp. & GP & 0.993\,$\pm$\,0.002 & $\num{1.01e-03}\,\pm\,\num{3.18e-04}$ \\
+\addlinespace[2pt]
+Test 4 & Extrap. & H-PINN & 0.996\,$\pm$\,0.001 & $\num{5.42e-04}\,\pm\,\num{1.91e-04}$ \\
+Test 4 & Extrap. & HO-PINN & \textbf{0.996\,$\pm$\,0.001} & \textbf{$\num{5.09e-04}\,\pm\,\num{1.89e-04}$} \\
+Test 4 & Extrap. & XGB & 0.920\,$\pm$\,0.016 & $\num{1.13e-02}\,\pm\,\num{2.25e-03}$ \\
+Test 4 & Extrap. & SVM & 0.767\,$\pm$\,0.177 & $\num{3.32e-02}\,\pm\,\num{2.52e-02}$ \\
+Test 4 & Extrap. & GP & 0.992\,$\pm$\,0.003 & $\num{1.20e-03}\,\pm\,\num{4.06e-04}$ \\
+\addlinespace[2pt]
+\end{longtable}
+\endgroup

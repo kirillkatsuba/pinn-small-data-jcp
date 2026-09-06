@@ -1,0 +1,21 @@
+\begin{table}[t]
+\centering
+\scriptsize
+\setlength{\tabcolsep}{2.3pt}
+\caption{Discrete label equivalence at $N=50$. $N^*_{\rm class}$ is the smallest tested budget at which any classical mean reaches the best PINN mean. Ratios are relative to 50 PINN labels.}
+\label{tab:label_equivalence}
+\begin{tabular}{@{}llclc@{}}
+\toprule
+Test & Region & PINN $R^2$ & $N^*_{\rm class}$ & Ratio \\
+\midrule
+T1 & Interp. & 0.999 & 100 (GP) & 2$\times$ \\
+T1 & Forecast & 0.972 & $>1000$ & $>20\times$ \\
+T2 & Interp. & 0.949 & 500 (GP) & 10$\times$ \\
+T2 & Forecast & 0.876 & 1000 (GP) & 20$\times$ \\
+T3 & Interp. & 0.716 & 100 (GP) & 2$\times$ \\
+T3 & Forecast & 0.657 & 200 (GP) & 4$\times$ \\
+T4 & Interp. & 0.633 & 200 (GP) & 4$\times$ \\
+T4 & Forecast & 0.680 & 500 (GP) & 10$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}

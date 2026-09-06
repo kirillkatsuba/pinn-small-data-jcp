@@ -1,0 +1,5 @@
+Five sparse-data repetitions compare PINN, tuned XGB, SVR, and GP fairly.
+A conventional surrogate has the best mean R2 in all four PDE benchmarks.
+PINN nearly matches the best RMSE in the low-variance flow problem.
+Constrained PINNs eliminate saturation violations in the harder flow tests.
+Noise, residual density, and unseen parameters do not reverse the ranking.

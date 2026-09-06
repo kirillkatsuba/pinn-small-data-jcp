@@ -1,0 +1,8 @@
+\section{Conclusions}
+\label{sec:conclusion}
+
+We evaluated whether PINNs offer a practical small-data advantage using identical labelled states, nested budgets, paired seeds, disjoint interpolation and forecasting tests, and strong training-only classical tuning. The answer is positive within a clearly defined regime. H-PINN has a higher mean primary \(\Rtwo\) than the strongest of XGB, RBF-SVR, and GP in every comparison at 20, 50, and 100 labels. For heterogeneous flow, the advantage is driven by the hardest quantity---water saturation---rather than by smooth pressure. A PINN also leads every temporal-forecasting comparison from 20 to 1000 labels and produces exactly admissible phase saturations.
+
+As labels become more abundant, the margins shrink. GP slightly surpasses the PINN for Test 3 interpolation at 500--1000 labels, while the heat interpolation problem becomes essentially solved by both. This crossover is the expected boundary of the small-data hypothesis: equation residuals are most valuable when labelled coverage is insufficient.
+
+PINNs require one to three orders of magnitude more fitting time than the tuned classical models in these experiments. Their benefit is therefore label efficiency, not optimizer efficiency. When solution labels require expensive simulation or measurement and the governing PDE is reliable, that trade-off can favour a PINN. When labels are plentiful or fitting latency dominates, a tuned classical surrogate remains the appropriate choice.

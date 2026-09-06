@@ -1,0 +1,106 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local caches
+.cache/
+*.cache
+.validation_cache/
+paper_2/.cache/
+
+# Logs
+*.log
+*.tmp
+*.bak
+
+# Model checkpoints and weights
+*.pt
+*.pth
+*.ckpt
+weights_logs/
+
+# Serialized / binary data
+*.npy
+*.npz
+*.pkl
+*.pickle
+*.joblib
+
+# The seven small immutable generator inputs are intentionally versioned.
+!reproducibility/data_inputs/**/*.npy
+
+# Large tabular outputs
+*.parquet
+*.feather
+
+# Generated experiment outputs
+ablation_results/
+ablation_smoke/
+smoke_plots_test3/
+smoke_no_plot_test3/
+test_results/
+test_ml_pinn/
+paper_jcp/output/
+paper_jcp/tmp/
+/paper_jcp/generated/
+/paper_jcp/experiments/
+
+# Retained locally for audit/backward compatibility, but superseded by the
+# unified JCP protocol under paper_jcp/.
+/test1-therm-conduct/
+/test2-2phase-disp-simple/
+/test3-2phase-disp-perm-nonlinear/
+/test4-2phase-disp-7d/
+
+# Benchmark raw data directories
+*/data/
+*/data_*/
+*/data-*/
+
+# Override the generic data pattern for immutable publication inputs.
+!reproducibility/data_inputs/
+!reproducibility/data_inputs/**/
+!reproducibility/data_inputs/**/*.npy
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.spl
+
+# Local archives and generated bundles
+*.zip
+*.tar.gz
+
+# Generated PDFs are reproducible from the TeX sources.
+paper_jcp/jcp_article/*.pdf
+
+# Redundant local template documentation and smoke figures. The exact class,
+# bibliography style, manuscript sources, and final figures remain versioned.
+/paper_jcp/jcp_article/template/
+/paper_jcp/figures/final_model_comparison_smoke/

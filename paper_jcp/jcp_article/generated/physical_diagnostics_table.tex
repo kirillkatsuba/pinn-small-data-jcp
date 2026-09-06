@@ -1,0 +1,29 @@
+\begin{table}[!htbp]
+\centering
+\small
+\caption{Physical diagnostics on the extrapolation region at $N=50$ (mean $\pm$ sample standard deviation). The violation rate is the fraction of predictions outside the tolerated saturation interval; closure is $|\widehat S_w+\widehat S_o-1|$.}
+\label{tab:physical_diagnostics}
+\begin{tabular}{llcc}
+\toprule
+Test & Method & Bounds violation & Closure MAE \\
+\midrule
+Test 2 & H-PINN & 0.0000\,$\pm$\,0.0000 & $\num{9.59e-09}\,\pm\,\num{1.05e-09}$ \\
+Test 2 & HO-PINN & 0.0000\,$\pm$\,0.0000 & $\num{9.52e-09}\,\pm\,\num{3.61e-10}$ \\
+Test 2 & XGB & 0.1231\,$\pm$\,0.0999 & $\num{2.67e-02}\,\pm\,\num{7.93e-03}$ \\
+Test 2 & SVM & 0.1858\,$\pm$\,0.1306 & $\num{8.47e-03}\,\pm\,\num{6.24e-03}$ \\
+Test 2 & GP & 0.0520\,$\pm$\,0.0747 & $\num{2.14e-07}\,\pm\,\num{3.49e-07}$ \\
+\midrule
+Test 3 & H-PINN & 0.0000\,$\pm$\,0.0000 & $\num{1.02e-08}\,\pm\,\num{3.03e-09}$ \\
+Test 3 & HO-PINN & 0.0000\,$\pm$\,0.0000 & $\num{9.54e-09}\,\pm\,\num{2.42e-09}$ \\
+Test 3 & XGB & 0.0527\,$\pm$\,0.0655 & $\num{6.96e-02}\,\pm\,\num{3.09e-02}$ \\
+Test 3 & SVM & 0.1573\,$\pm$\,0.0804 & $\num{1.13e-02}\,\pm\,\num{9.49e-03}$ \\
+Test 3 & GP & 0.0373\,$\pm$\,0.0419 & $\num{1.75e-08}\,\pm\,\num{1.18e-08}$ \\
+\midrule
+Test 4 & H-PINN & 0.0000\,$\pm$\,0.0000 & $\num{8.09e-09}\,\pm\,\num{7.55e-10}$ \\
+Test 4 & HO-PINN & 0.0000\,$\pm$\,0.0000 & $\num{8.74e-09}\,\pm\,\num{1.11e-09}$ \\
+Test 4 & XGB & 0.1078\,$\pm$\,0.1124 & $\num{1.76e-02}\,\pm\,\num{2.83e-03}$ \\
+Test 4 & SVM & 0.0133\,$\pm$\,0.0231 & $\num{2.38e-03}\,\pm\,\num{2.06e-03}$ \\
+Test 4 & GP & 0.0551\,$\pm$\,0.0512 & $\num{1.32e-08}\,\pm\,\num{4.64e-09}$ \\
+\bottomrule
+\end{tabular}
+\end{table}

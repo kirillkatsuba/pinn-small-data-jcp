@@ -1,0 +1,106 @@
+\section{Small-data surrogate problem}
+\label{sec:method}
+
+\subsection{Common learning task}
+
+Let \(\boldsymbol z\in\mathcal Z\) collect space, time, and, where applicable, physical parameters, and let \(\boldsymbol y(\boldsymbol z)\) denote the PDE state. Each surrogate receives
+\begin{equation}
+    \mathcal D_N=\{(\boldsymbol z_i,\boldsymbol y_i)\}_{i=1}^{N},
+\end{equation}
+where \(N\) is the number of expensive labelled solution states. The objective is to predict \(\boldsymbol y\) at unseen coordinates. XGB, SVR, and GP use only \(\mathcal D_N\). The PINN also uses the known governing equations and prescribed initial and boundary conditions, but no additional reference-solver states.
+
+This distinction is central. The residual count \(N_r\) is not included in \(N\), because a residual point supplies no simulator-generated target. It is nevertheless reported separately because evaluating higher-order automatic derivatives has a real computational cost.
+
+\subsection{PINN architecture and physical loss}
+
+All four tests use the same gated residual multilayer perceptron. Physical inputs are affinely mapped to \([-1,1]\) using the known domain bounds rather than statistics estimated from sparse labels. Two learned tanh input transforms are multiplied elementwise to initialize the hidden representation. Six hidden layers of width 128 then use GELU activations, with a residual connection after every second layer. Xavier initialization is used throughout. Test 1 has one output. The flow network returns pressure, oil saturation, water saturation, and four auxiliary phase-velocity components.
+
+For flow, the output map uses sigmoid transformations and saturation normalization:
+\begin{equation}
+    0\le \widehat S_w,\widehat S_o\le 1,
+    \qquad \widehat S_w+\widehat S_o=1 .
+\end{equation}
+Thus, saturation admissibility is guaranteed by construction rather than merely encouraged through a penalty.
+
+The training objective consists of three mean-square components,
+\begin{equation}
+    \mathcal L(\theta)
+    =w_{\mathrm{data}}\Ld
+    +w_{\mathrm{ibc}}\Libc
+    +w_{\mathrm{pde}}\Lpde,
+    \qquad \sum_j w_j=1 .
+    \label{eq:total_loss}
+\end{equation}
+\(\Ld\) measures disagreement with \(\mathcal D_N\), \(\Libc\) enforces initial and boundary conditions, and \(\Lpde\) collects the strong-form equation residuals. At every epoch the optimizer uses all \(N\) labels and \(N_r=2N\) residual points. Labels remain fixed, while residual points are freshly resampled.
+
+\subsection{Hierarchical and hierarchical--orthogonal weighting}
+
+Directly assigning equal weights to the three components can make the strong-form residual dominate before the network has identified the observed solution branch. H-PINN therefore activates the objectives in the order data \(\rightarrow\) initial/boundary conditions \(\rightarrow\) PDE. Define the detached ratios
+\begin{equation}
+    q_d=\frac{\operatorname{sg}(\Ld)}{L^0_{\mathrm{data}}},
+    \qquad
+    q_b=\frac{\operatorname{sg}(\Libc)}{L^0_{\mathrm{ibc}}},
+\end{equation}
+where \(\operatorname{sg}\) denotes stop-gradient. The H-PINN gates and normalized weights are
+\begin{align}
+    a_d^{\mathrm H}&=1,
+    &a_b^{\mathrm H}&=\exp(-q_d),\\
+    a_r^{\mathrm H}&=\exp[-\max(q_d,q_b)].
+    \label{eq:h_gates}
+\end{align}
+\begin{equation}
+    w_j^{\mathrm H}
+    =\frac{a_j^{\mathrm H}}
+    {a_d^{\mathrm H}+a_b^{\mathrm H}+a_r^{\mathrm H}},
+    \qquad j\in\{d,b,r\}.
+    \label{eq:h_weights}
+\end{equation}
+Here \(d\), \(b\), and \(r\) denote data, IBC, and residual terms. Consequently, \(w_b\) grows when the data error reaches its target scale, while \(w_r\) grows only when both preceding errors are sufficiently small. The target scales are not convergence tolerances: they determine the smooth transition between hierarchy levels. The final values are \(L^0_{\mathrm{data}}=0.03\) and \(L^0_{\mathrm{ibc}}=0.003\).
+
+HO-PINN adds a gradient-direction modulation to the same exponential hierarchy. Let
+\begin{equation}
+    \boldsymbol g_d=\nabla_\theta\Ld,
+    \quad \boldsymbol g_b=\nabla_\theta\Libc,
+    \quad \boldsymbol g_r=\nabla_\theta\Lpde,
+\end{equation}
+and define one projection-removal step by
+\begin{equation}
+    \mathcal Q_{\boldsymbol b}(\boldsymbol v)
+    =\boldsymbol v-
+    \frac{\langle\boldsymbol v,\boldsymbol b\rangle}
+    {\lVert\boldsymbol b\rVert_2^2+\varepsilon}\boldsymbol b.
+\end{equation}
+The fractions of new gradient direction are computed by the same sequential Gram--Schmidt-style operation used in the implementation,
+\begin{align}
+    \rho_b&=\frac{\lVert\mathcal Q_{\boldsymbol g_d}(\boldsymbol g_b)\rVert_2}
+    {\lVert\boldsymbol g_b\rVert_2+\varepsilon},\\
+    \rho_r&=\frac{\lVert
+    \mathcal Q_{\boldsymbol g_b}\!\left(
+    \mathcal Q_{\boldsymbol g_d}(\boldsymbol g_r)\right)
+    \rVert_2}{\lVert\boldsymbol g_r\rVert_2+\varepsilon},
+    \qquad 0\le\rho_b,\rho_r\le1.
+    \label{eq:orthogonal_fractions}
+\end{align}
+With floor \(c\in[0,1]\), the HO-PINN gates are
+\begin{align}
+    a_d^{\mathrm{HO}}&=a_d^{\mathrm H},\\
+    a_b^{\mathrm{HO}}&=a_b^{\mathrm H}\,[c+(1-c)\rho_b],\\
+    a_r^{\mathrm{HO}}&=a_r^{\mathrm H}\,[c+(1-c)\rho_r],
+    \label{eq:ho_gates}\\
+    w_j^{\mathrm{HO}}&=\frac{a_j^{\mathrm{HO}}}
+    {a_d^{\mathrm{HO}}+a_b^{\mathrm{HO}}+a_r^{\mathrm{HO}}}.
+    \label{eq:ho_weights}
+\end{align}
+We use \(c=0.25\). A gradient that mostly repeats a higher-priority direction is attenuated, whereas a distinct direction is preserved; the floor prevents complete removal. At \(c=1\), HO-PINN reduces exactly to H-PINN. Gradient vectors and all gates are detached before the final backward pass, so Eqs.~\eqref{eq:h_weights} and \eqref{eq:ho_weights} do not introduce second-order derivatives.
+
+The two variants differ only in Eqs.~\eqref{eq:orthogonal_fractions}--\eqref{eq:ho_weights}. Architecture, labels, residual samples, optimizer, and epoch budget are otherwise identical. The target scales and orthogonal floor were chosen in staged development experiments rather than on a continuous optimizer; the exact candidate sets, selection criterion, and the limitations of this screening are documented in \ref{app:tuning}. No theorem concerning either schedule is claimed here.
+
+\subsection{Classical baselines}
+
+We compare against three established non-neural surrogate families:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{XGB}: an independent histogram-based squared-error XGBoost model for each output \cite{chen2016xgboost};
+    \item \textbf{SVR}: standardized inputs and an independent radial-basis support-vector regressor for each output \cite{drucker1997support};
+    \item \textbf{GP}: standardized inputs and independent Gaussian-process regressors with constant-scaled stationary kernels and white-noise terms \cite{rasmussen2006gaussian}.
+\end{itemize}
+Independent output fits avoid making one target's numerical scale control another target's hyperparameters. The final flow comparison uses deliberately strong searches: 32 sampled XGB configurations, 40 sampled SVR configurations with target scaling inside the estimator, and 12 GP kernel--regularization combinations. Each candidate is assessed using three strictly forward expanding-window folds: all validation times are later than every time used to fit that fold. Hyperparameters are selected independently for pressure, oil saturation, and water saturation. The final interpolation and extrapolation tests are never accessed during tuning. Test 1 uses the earlier standard training-only search: an eight-point XGB grid, a nine-point SVR grid, and marginal-likelihood optimized anisotropic RBF GP.

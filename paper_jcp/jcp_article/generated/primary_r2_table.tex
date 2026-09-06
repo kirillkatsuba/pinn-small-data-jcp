@@ -1,0 +1,32 @@
+\begin{sidewaystable}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\caption{Primary held-out $R^2$ at two scarce-label budgets (mean $\pm$ sample standard deviation over seeds 101, 102, and 103). Test 1 uses the scalar temperature; Tests 2--4 use water saturation $S_w$. Bold marks the highest mean within a row.}
+\label{tab:primary_r2}
+\begin{tabular}{lllccccc}
+\toprule
+Test & Region & $N$ & H-PINN & HO-PINN & XGB & SVM & GP \\
+\midrule
+Test 1 & Interp. & 20 & \textbf{0.997\,$\pm$\,0.002} & 0.997\,$\pm$\,0.002 & 0.314\,$\pm$\,0.195 & 0.431\,$\pm$\,0.132 & 0.775\,$\pm$\,0.132 \\
+Test 1 & Interp. & 100 & \textbf{1.000\,$\pm$\,0.000} & 0.999\,$\pm$\,0.001 & 0.847\,$\pm$\,0.043 & 0.993\,$\pm$\,0.004 & 1.000\,$\pm$\,0.000 \\
+Test 1 & Extrap. & 20 & \textbf{0.955\,$\pm$\,0.016} & 0.936\,$\pm$\,0.030 & 0.254\,$\pm$\,0.323 & 0.395\,$\pm$\,0.363 & -0.015\,$\pm$\,0.552 \\
+Test 1 & Extrap. & 100 & \textbf{0.969\,$\pm$\,0.009} & 0.943\,$\pm$\,0.038 & 0.584\,$\pm$\,0.121 & 0.645\,$\pm$\,0.180 & -0.168\,$\pm$\,0.441 \\
+\midrule
+Test 2 & Interp. & 20 & 0.900\,$\pm$\,0.038 & \textbf{0.901\,$\pm$\,0.038} & 0.375\,$\pm$\,0.033 & 0.417\,$\pm$\,0.158 & 0.564\,$\pm$\,0.105 \\
+Test 2 & Interp. & 100 & \textbf{0.977\,$\pm$\,0.009} & 0.975\,$\pm$\,0.009 & 0.741\,$\pm$\,0.047 & 0.816\,$\pm$\,0.040 & 0.859\,$\pm$\,0.045 \\
+Test 2 & Extrap. & 20 & \textbf{0.834\,$\pm$\,0.027} & 0.828\,$\pm$\,0.034 & 0.143\,$\pm$\,0.191 & -0.171\,$\pm$\,0.361 & 0.063\,$\pm$\,0.362 \\
+Test 2 & Extrap. & 100 & 0.933\,$\pm$\,0.011 & \textbf{0.933\,$\pm$\,0.014} & 0.460\,$\pm$\,0.030 & 0.579\,$\pm$\,0.171 & 0.511\,$\pm$\,0.084 \\
+\midrule
+Test 3 & Interp. & 20 & 0.567\,$\pm$\,0.031 & \textbf{0.576\,$\pm$\,0.027} & 0.125\,$\pm$\,0.049 & 0.204\,$\pm$\,0.076 & -0.038\,$\pm$\,0.641 \\
+Test 3 & Interp. & 100 & \textbf{0.840\,$\pm$\,0.014} & 0.836\,$\pm$\,0.022 & 0.666\,$\pm$\,0.041 & 0.616\,$\pm$\,0.035 & 0.745\,$\pm$\,0.052 \\
+Test 3 & Extrap. & 20 & 0.547\,$\pm$\,0.051 & \textbf{0.547\,$\pm$\,0.041} & 0.070\,$\pm$\,0.088 & -1.344\,$\pm$\,2.152 & 0.056\,$\pm$\,0.416 \\
+Test 3 & Extrap. & 100 & \textbf{0.780\,$\pm$\,0.052} & 0.771\,$\pm$\,0.055 & 0.491\,$\pm$\,0.072 & -1.021\,$\pm$\,1.095 & 0.483\,$\pm$\,0.126 \\
+\midrule
+Test 4 & Interp. & 20 & \textbf{0.517\,$\pm$\,0.044} & 0.516\,$\pm$\,0.044 & -0.189\,$\pm$\,0.346 & -0.199\,$\pm$\,0.497 & 0.058\,$\pm$\,0.129 \\
+Test 4 & Interp. & 100 & 0.715\,$\pm$\,0.008 & \textbf{0.720\,$\pm$\,0.017} & 0.474\,$\pm$\,0.108 & 0.258\,$\pm$\,0.052 & 0.466\,$\pm$\,0.266 \\
+Test 4 & Extrap. & 20 & 0.632\,$\pm$\,0.017 & \textbf{0.632\,$\pm$\,0.019} & -0.009\,$\pm$\,0.330 & -0.271\,$\pm$\,0.520 & -0.126\,$\pm$\,0.226 \\
+Test 4 & Extrap. & 100 & 0.725\,$\pm$\,0.037 & \textbf{0.737\,$\pm$\,0.038} & 0.353\,$\pm$\,0.116 & 0.212\,$\pm$\,0.102 & 0.262\,$\pm$\,0.419 \\
+\bottomrule
+\end{tabular}
+\end{sidewaystable}

@@ -1,0 +1,83 @@
+\section{Results}
+\label{sec:results}
+
+\subsection{Primary scarce-label comparison}
+
+\input{generated/primary_summary_table.tex}
+
+Table~\ref{tab:primary_summary} compares the strongest PINN and classical mean at \(N=20\) and \(N=100\); the complete five-method values are given in Tables~\ref{tab:primary_full_n20} and \ref{tab:primary_full_n100}. The ranking is consistent across benchmark difficulty. At \(N=20\), H-PINN attains an interpolation \(R^2\) of \(0.997\pm0.002\) for the analytical heat equation, whereas the strongest classical mean is \(0.775\pm0.132\) from GP. For water saturation, the best PINN scores are 0.901, 0.576, and 0.517 in Tests 2--4; the corresponding classical bests are 0.564, 0.204, and 0.058.
+
+At \(N=100\), both H-PINN and GP have saturated the heat interpolation problem. The flow distinction remains: H/HO-PINN reaches 0.977, 0.840, and 0.720 on Tests 2--4, compared with classical bests of 0.859, 0.745, and 0.474. Forecasting is harder for the data-only models. For example, at \(N=20\), Test 2 H-PINN reaches \(0.834\pm0.027\), while XGB reaches \(0.143\pm0.191\); in Test 4 both PINN variants reach approximately 0.632, while all classical means are negative. The best PINN has the highest mean primary \(R^2\) in all 24 comparisons formed by four tests, two regions, and \(N\in\{20,50,100\}\).
+
+\input{generated/target_summary_table.tex}
+
+Table~\ref{tab:target_summary} resolves the flow comparison by target at the representative budget \(N=50\). A PINN has the best mean water-saturation \(R^2\) and MSE in all six test--region blocks. Pressure is easier for every method, but a PINN also leads all six pressure blocks. The separation is much larger for saturation: in Test 3 forecasting, H-PINN obtains water-saturation \(R^2=0.657\pm0.033\), compared with \(0.470\pm0.147\) for GP; their pressure scores are \(0.979\pm0.005\) and \(0.956\pm0.018\), respectively.
+
+\subsection{Learning curves and label equivalence}
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{jcp_swat_r2_scaling.pdf}
+    \caption{Water-saturation \(R^2\) versus labelled-state budget. Points and error bars are the mean and sample standard deviation over seeds 101--103. The grey band marks the prespecified small-data range \(N\le100\). Labels occupy the first 70\% of time; forecasting is evaluated on the final 30\%. Classical flow models are tuned by forward-time validation at every budget.}
+    \label{fig:swat_scaling}
+\end{figure*}
+
+The flow learning curves in Fig.~\ref{fig:swat_scaling} show both the advantage and its boundary. Test 2 is PINN-dominated at every budget, although the interpolation margin decreases from 0.337 at \(N=20\) to 0.022 at \(N=1000\). Test 3 has the clearest crossover: the best PINN leads GP by 0.372, 0.154, and 0.095 at \(N=20,50,100\), is nearly tied at \(N=200\), and is slightly behind at \(N=500\) and \(N=1000\). Test 4 remains PINN-dominated because the same labels must cover space, time, and four physical parameters; its interpolation margin decreases from 0.459 at \(N=20\) to 0.021 at \(N=1000\).
+
+\input{generated/label_equivalence_table.tex}
+
+Table~\ref{tab:label_equivalence} expresses the same effect in label units. To match the best \(N=50\) PINN mean, a classical model requires 2--20 times more labels over seven of the eight test--region pairs. None reaches the heat-forecasting target by \(N=1000\). This is a discrete diagnostic over the tested budgets, not an interpolated sample-complexity estimate.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{jcp_advantage_map.pdf}
+    \caption{Difference between the best PINN and best classical mean \(R^2\) at every tested budget. Test 1 uses temperature; Tests 2--4 use water saturation. Positive values favour PINN.}
+    \label{fig:advantage}
+\end{figure*}
+
+The advantage map in Fig.~\ref{fig:advantage} summarizes all 48 budget--test--region comparisons. The best PINN wins 43. All five classical wins are confined to interpolation: three negligible differences in the nearly solved heat problem and two Test 3 GP crossovers. A PINN has the highest mean in every temporal-forecasting comparison.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=\textwidth]{jcp_test1_r2_scaling.pdf}
+    \caption{Temperature \(R^2\) for the analytical heat equation. The grey band marks \(N\le100\). GP becomes essentially exact for data-rich interpolation, whereas the PINN retains a clear equation-assisted forecasting advantage.}
+    \label{fig:heat_scaling}
+\end{figure*}
+
+Figure~\ref{fig:heat_scaling} separates interpolation from forecasting on the smoothest benchmark. GP becomes essentially exact for interpolation from \(N=200\), but its future-time predictions remain unstable across sparse selections. H-PINN stays between 0.955 and 0.983 through \(N=20\)--500 because it enforces the heat operator beyond the latest labelled time.
+
+\subsection{Qualitative reconstruction and physical admissibility}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.90\columnwidth]{qualitative_test1_vertical.png}
+    \caption{Test 1 profiles for seed 101 at \(N=20\): initial state (\(t=0\)), end of the labelled-time interval (\(t=0.035\)), and final forecast (\(t=0.05\)). H-PINN reconstructs the periodic modes and their dissipative evolution; XGB, SVR, and GP use the same labels but no equation residual.}
+    \label{fig:qual_heat}
+\end{figure}
+
+The profiles in Fig.~\ref{fig:qual_heat} explain the heat scores. H-PINN preserves the correct modal decay from only 20 labels. XGB retains a piecewise-constant structure, while SVR and GP interpolate the observed interval smoothly but do not reproduce the final-time decay.
+
+\begin{strip}
+    \centering
+    \includegraphics[width=0.96\textwidth]{qualitative_flow_saturation_composite.png}
+    \captionsetup{hypcap=false}
+    \captionof{figure}{Final forecasting-time water saturation for seed 101. Rows show Tests 2--4; columns compare the reference, H-PINN, XGB, SVR, and GP. Tests 2 and 3 use \(N=50\); Test 4 uses \(N=20\) and parameter realization 7. Colour limits are shared within every row.}
+    \label{fig:qual_flow_saturation}
+\end{strip}
+
+The saturation fields in Fig.~\ref{fig:qual_flow_saturation} expose differences hidden by the easier pressure target (Appendix Fig.~\ref{fig:qual_flow_pressure}). H-PINN captures the displaced volume and broad front geometry in Test 2. In Test 3 it recovers the curved high-conductivity pathway; XGB is block-like, while SVR and GP smooth away much of the transported phase.
+
+The Test 4 row is deliberately severe: 20 labelled states cannot explicitly cover 100 parameter combinations and a space--time domain. The classical saturation fields remain close to a low-amplitude average response. H-PINN does not reproduce every sharp feature, but predicts substantial displacement and its parameter-conditioned geometry, consistent with the positive forecasting \(R^2\).
+
+The constrained output map gives zero saturation-bound violations in every flow run and closure MAE of approximately \(10^{-8}\). At \(N=50\), classical bounds-violation rates in the forecasting region range from 5.2\% to 18.6\% in Test 2, 3.7\% to 15.7\% in Test 3, and 1.3\% to 10.8\% in Test 4. These diagnostics (Table~\ref{tab:physical_diagnostics}) do not enter the accuracy ranking; they show that the PINN prediction is also physically admissible.
+
+\subsection{Loss balancing and computational cost}
+
+H-PINN and HO-PINN track one another closely throughout Fig.~\ref{fig:swat_scaling}. Neither uniformly dominates: HO-PINN is slightly better in several very sparse cases, whereas H-PINN is often equal or marginally stronger as \(N\) grows. The large scientific contrast is between either PINN and the classical models, not between the weighting variants. The simpler H-PINN alone has a higher mean than every classical baseline in all 24 comparisons at \(N\le100\).
+
+The gain is not free. At \(N=50\), H-PINN fitting takes approximately 135--288 seconds and HO-PINN 216--448 seconds on the recorded hardware; complete classical tuning takes less than eight seconds and often less than one (Table~\ref{tab:runtime}). Thus, PINN is attractive when the cost of labels dominates
+\begin{equation}
+    C_{\mathrm{total}}(N)
+    =N C_{\mathrm{label}}+C_{\mathrm{fit}}(N)+M C_{\mathrm{query}}(N),
+\end{equation}
+and the reduction in required \(N\) offsets the larger fitting cost. When labels are cheap and abundant, a tuned classical surrogate is operationally preferable.

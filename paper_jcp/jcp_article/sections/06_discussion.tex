@@ -1,0 +1,26 @@
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What the experiments establish}
+
+The evidence supports a precise rather than universal statement:
+\begin{quote}
+\emph{For the tested PDEs, when the equation and boundary data are trusted and only 20--100 solution states are labelled, physics-informed training is substantially more accurate than tuned XGB, RBF-SVR, and GP, especially for transport-dominated water saturation and future-time prediction.}
+\end{quote}
+This statement is supported across four systems, two evaluation regions, six budgets, and three paired seeds. It is also robust to using H-PINN or HO-PINN. The strongest evidence is not a single favourable split but the repeated pattern: large positive margins at \(N=20\), smaller margins as \(N\) increases, and an interpretable GP crossover in data-richer interpolation.
+
+The result should not be paraphrased as a claim that neural networks always outperform classical models. In Test 3 interpolation, GP is slightly better from \(N=500\). In the heat equation, GP becomes essentially exact once it has enough in-range observations. These cases are scientifically useful because they show when a conventional surrogate has acquired enough data for the physics prior to add little predictive value.
+
+\subsection{Why the gain is largest in forecasting and saturation}
+
+Sparse classical regression sees only input--output pairs. Beyond the latest labelled time it has no direct representation of conservation, diffusion, or Darcy transport. H/HO-PINN continues to constrain temporal derivatives and flux divergence throughout the domain, which explains why its advantage is larger in the final 30\% of time. This is also why the correct term is \emph{physics-assisted forecasting}: the future state is hidden, but the future operator is not.
+
+Water saturation is the decisive target because it contains a moving, permeability-controlled front. Pressure is elliptic and spatially smooth, and therefore comparatively easy for GP and SVR. A macro-average would allow near-perfect pressure to mask a poor estimate of transported water. Reporting \(S_w\) separately makes the practical difficulty visible and aligns the metric with the most demanding component of the numerical solution.
+
+\subsection{Fairness and limitations}
+
+The comparison is intentionally favourable to the classical baselines in several respects. They use the same labels, their flow hyperparameters are chosen independently per target by forward-time cross-validation, and the search cost is included. No future evaluation value is used for tuning. Conversely, the PINN receives genuine extra prior information: the exact PDE, coefficients at residual points, and boundary conditions. This is not data leakage; it is the mechanism being evaluated. It does mean that the conclusion applies only when the governing model is available and sufficiently accurate.
+
+Four limitations remain. First, there are only three final seeds, and the same numerical seeds were used during the staged PINN screen. The corrected flow fields were generated later and the configuration was frozen across them, but these are still post-selection reproducibility runs rather than an untouched confirmatory sample. Fine distinctions between H-PINN and HO-PINN or between nearly saturated models should not be interpreted as significance tests. Second, Tests 2--4 inherit the spatial and temporal error of one \(64^2\) finite-volume discretization. Grid refinement and comparison against laboratory data are natural next steps. Third, residual points cover the complete time interval. A strict extrapolation study in which both labels and residuals stop at \(0.7t_{\max}\) would answer a different question and is not claimed here. Fourth, the width/depth pair was fixed rather than systematically searched; \ref{app:tuning} distinguishes the completed activation and optimization screens from this architectural choice.
+
+The study also does not compare alternative neural operators, PINN architectures, or numerical solvers. Those methods address broader methodological questions, whereas the present JCP study isolates a practical choice between one frozen physics-informed surrogate and established non-neural small-data regressors. Finally, permeability is assumed known as a PDE coefficient at queried coordinates. Uncertain fields, model-form error, noisy boundary conditions, and inverse identification require separate evaluation.

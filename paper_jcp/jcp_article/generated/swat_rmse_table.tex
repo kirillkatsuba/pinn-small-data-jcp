@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\caption{Water-saturation RMSE at $N=50$ (mean $\pm$ sample standard deviation over three seeds). Bold marks the lowest mean within a row.}
+\label{tab:swat_rmse}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llccccc}
+\toprule
+Test & Region & H-PINN & HO-PINN & XGB & SVM & GP \\
+\midrule
+Test 2 & Interp. & 0.0360 $\pm$ 0.0089 & \textbf{0.0347 $\pm$ 0.0075} & 0.0887 $\pm$ 0.0047 & 0.0725 $\pm$ 0.0081 & 0.0706 $\pm$ 0.0091 \\
+Test 2 & Extrap. & 0.0652 $\pm$ 0.0108 & \textbf{0.0649 $\pm$ 0.0109} & 0.1267 $\pm$ 0.0060 & 0.1451 $\pm$ 0.0170 & 0.1193 $\pm$ 0.0316 \\
+\midrule
+Test 3 & Interp. & 0.0655 $\pm$ 0.0028 & \textbf{0.0651 $\pm$ 0.0038} & 0.1082 $\pm$ 0.0162 & 0.1036 $\pm$ 0.0284 & 0.0797 $\pm$ 0.0179 \\
+Test 3 & Extrap. & \textbf{0.0993 $\pm$ 0.0049} & 0.0996 $\pm$ 0.0065 & 0.1669 $\pm$ 0.0253 & 0.2690 $\pm$ 0.1703 & 0.1227 $\pm$ 0.0177 \\
+\midrule
+Test 4 & Interp. & \textbf{0.0661 $\pm$ 0.0028} & 0.0662 $\pm$ 0.0025 & 0.0920 $\pm$ 0.0038 & 0.1041 $\pm$ 0.0073 & 0.0884 $\pm$ 0.0037 \\
+Test 4 & Extrap. & \textbf{0.0919 $\pm$ 0.0057} & 0.0930 $\pm$ 0.0047 & 0.1327 $\pm$ 0.0102 & 0.1665 $\pm$ 0.0090 & 0.1408 $\pm$ 0.0211 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

@@ -1,0 +1,17 @@
+\begin{table*}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\caption{Wall-clock fitting and tuning time in seconds at $N=50$ (mean $\pm$ sample standard deviation over three seeds). Classical times include hyperparameter selection; reference-data generation is excluded.}
+\label{tab:runtime}
+\begin{tabular}{lccccc}
+\toprule
+Test & H-PINN & HO-PINN & XGB & SVM & GP \\
+\midrule
+Test 1 & 134.52\,$\pm$\,18.86 & 216.36\,$\pm$\,31.72 & 0.30\,$\pm$\,0.00 & 0.08\,$\pm$\,0.00 & \textbf{0.07\,$\pm$\,0.02} \\
+Test 2 & 279.91\,$\pm$\,68.78 & 417.58\,$\pm$\,42.82 & 4.48\,$\pm$\,0.45 & \textbf{0.61\,$\pm$\,0.03} & 3.20\,$\pm$\,0.16 \\
+Test 3 & 229.22\,$\pm$\,21.09 & 447.80\,$\pm$\,160.06 & 4.05\,$\pm$\,0.38 & \textbf{0.62\,$\pm$\,0.01} & 5.63\,$\pm$\,0.27 \\
+Test 4 & 287.82\,$\pm$\,79.38 & 421.88\,$\pm$\,73.71 & 4.57\,$\pm$\,0.43 & \textbf{0.56\,$\pm$\,0.01} & 7.74\,$\pm$\,2.40 \\
+\bottomrule
+\end{tabular}
+\end{table*}
