@@ -19,6 +19,7 @@
 - `tests/test_two_phase_fv.py`
 - `tests/test_corrected_unified_protocol.py`
 - `tests/test_classical_tuning.py`
+- `tests/test_generator_inputs.py`
 - `tests/test_device_execution.py`
 
 ## Tracked experimental artifacts

@@ -14,6 +14,7 @@ python3 -B -m unittest \
   tests.test_two_phase_fv \
   tests.test_corrected_unified_protocol \
   tests.test_classical_tuning \
+  tests.test_generator_inputs \
   tests.test_device_execution -v
 ```
 

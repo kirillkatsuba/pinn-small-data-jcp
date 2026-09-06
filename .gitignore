@@ -104,3 +104,7 @@ paper_jcp/jcp_article/*.pdf
 # bibliography style, manuscript sources, and final figures remain versioned.
 /paper_jcp/jcp_article/template/
 /paper_jcp/figures/final_model_comparison_smoke/
+
+# Slurm runtime logs
+/slurm/logs/*
+!/slurm/logs/.gitkeep

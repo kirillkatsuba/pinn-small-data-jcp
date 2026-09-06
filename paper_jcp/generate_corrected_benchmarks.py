@@ -25,6 +25,7 @@ from paper_jcp.two_phase_fv import (  # noqa: E402
 
 
 ROOT = Path(__file__).resolve().parents[1]
+REPRODUCIBILITY_INPUTS = ROOT / "reproducibility" / "data_inputs"
 
 
 def parse_args() -> argparse.Namespace:
@@ -63,6 +64,26 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--cfl", type=float, default=0.45)
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument(
+        "--permeability-test2",
+        type=Path,
+        default=REPRODUCIBILITY_INPUTS / "test2" / "permeability.npy",
+    )
+    parser.add_argument(
+        "--permeability-test3",
+        type=Path,
+        default=REPRODUCIBILITY_INPUTS / "test3" / "permeability.npy",
+    )
+    parser.add_argument(
+        "--permeability-test4",
+        type=Path,
+        default=REPRODUCIBILITY_INPUTS / "test4" / "permeability.npy",
+    )
+    parser.add_argument(
+        "--test4-parameter-dir",
+        type=Path,
+        default=REPRODUCIBILITY_INPUTS / "test4",
+    )
     return parser.parse_args()
 
 
@@ -99,7 +120,7 @@ def build_specs(args: argparse.Namespace) -> list[dict[str, Any]]:
         specs.append(
             _fixed_spec(
                 "test2",
-                ROOT / "test2-2phase-disp-simple" / "perm.npy",
+                args.permeability_test2,
                 args.final_time_test2,
                 args.output_root,
                 args,
@@ -109,14 +130,14 @@ def build_specs(args: argparse.Namespace) -> list[dict[str, Any]]:
         specs.append(
             _fixed_spec(
                 "test3",
-                ROOT / "test3-2phase-disp-perm-nonlinear" / "perm_3sigma.npy",
+                args.permeability_test3,
                 args.final_time_test3,
                 args.output_root,
                 args,
             )
         )
     if "test4" in selected:
-        parameter_dir = ROOT / "test4-2phase-disp-7d" / "data-100-new-two-sigma"
+        parameter_dir = args.test4_parameter_dir
         parameters = {
             "water_exponent": np.load(parameter_dir / "pwat_100.npy"),
             "oil_exponent": np.load(parameter_dir / "poil_100.npy"),
@@ -133,7 +154,7 @@ def build_specs(args: argparse.Namespace) -> list[dict[str, Any]]:
                     "test": "test4",
                     "sample": sample,
                     "permeability_path": str(
-                        ROOT / "test4-2phase-disp-7d" / "perm_2.npy"
+                        args.permeability_test4
                     ),
                     "output": str(
                         args.output_root / "test4" / f"sample_{sample:03d}.npz"

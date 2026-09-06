@@ -100,6 +100,7 @@ python3 -B -m unittest \
   tests.test_two_phase_fv \
   tests.test_corrected_unified_protocol \
   tests.test_classical_tuning \
+  tests.test_generator_inputs \
   tests.test_device_execution -v
 ```
 
@@ -205,6 +206,19 @@ pdflatex -interaction=nonstopmode main.tex
 
 For every direct command, including training-history comparisons, see
 [`reproducibility/RUN_COMMANDS.md`](reproducibility/RUN_COMMANDS.md).
+
+## Slurm cluster
+
+Ready-to-submit CPU/GPU jobs are provided in [`slurm/`](slurm/README.md):
+
+```bash
+bash slurm/submit_pipeline.sh
+```
+
+The pipeline first generates Tests 2--4 on CPU, then runs one GPU task per PINN
+test, and finally runs one CPU task per classical test. Site-specific Slurm
+account, partition, module, GPU type, memory, and time limits are documented as
+explicit parameters rather than hard-coded assumptions.
 
 ## Reproducibility across devices
 
