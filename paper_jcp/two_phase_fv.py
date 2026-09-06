@@ -433,7 +433,6 @@ def simulate(
     domain_size: tuple[float, float] = (1.0, 1.0),
     progress: bool = False,
     progress_description: str = "two-phase FV",
-    progress_diagnostics: bool = False,
 ) -> SimulationResult:
     """Simulate two-phase displacement and return synchronous snapshots.
 
@@ -582,28 +581,11 @@ def simulate(
         sw_history[output_index] = sw
         so_history[output_index] = 1.0 - sw
         if progress_bar is not None:
-            if progress_diagnostics:
-                mass_error = max(
-                    diagnostics.maximum_water_mass_balance_error,
-                    diagnostics.maximum_oil_mass_balance_error,
-                )
-                progress_bar.set_postfix(
-                    t=f"{times[output_index]:.4g}/{final_time:.4g}",
-                    layer_substeps=local_substeps,
-                    total_substeps=diagnostics.total_substeps,
-                    dt_min=f"{diagnostics.minimum_substep:.2e}",
-                    dt_max=f"{diagnostics.maximum_substep:.2e}",
-                    sw=f"[{np.min(sw):.3f},{np.max(sw):.3f}]",
-                    mass_err=f"{mass_error:.2e}",
-                    pressure_err=f"{diagnostics.maximum_pressure_balance_error:.2e}",
-                    refresh=False,
-                )
-            else:
-                progress_bar.set_postfix(
-                    substeps=diagnostics.total_substeps,
-                    sw_max=f"{diagnostics.maximum_water_saturation:.3f}",
-                    refresh=False,
-                )
+            progress_bar.set_postfix(
+                substeps=diagnostics.total_substeps,
+                sw_max=f"{diagnostics.maximum_water_saturation:.3f}",
+                refresh=False,
+            )
 
     metadata: dict[str, Any] = {
         "schema": "corrected-two-phase-fv-v1",

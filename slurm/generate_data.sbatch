@@ -26,5 +26,4 @@ python3 -B paper_jcp/generate_corrected_benchmarks.py \
   --final-time-test3 0.05 \
   --final-time-test4 0.2 \
   --cfl 0.2 \
-  --progress summary \
   --workers "${SLURM_CPUS_PER_TASK}"

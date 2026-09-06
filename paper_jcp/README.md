@@ -53,12 +53,8 @@ python3 -B paper_jcp/generate_corrected_benchmarks.py \
   --permeability-test2 reproducibility/data_inputs/test2/permeability.npy \
   --permeability-test3 reproducibility/data_inputs/test3/permeability.npy \
   --permeability-test4 reproducibility/data_inputs/test4/permeability.npy \
-  --test4-parameter-dir reproducibility/data_inputs/test4 \
-  --progress auto
+  --test4-parameter-dir reproducibility/data_inputs/test4
 ```
-
-Use `--progress detailed --workers 1` for per-time-layer physical diagnostics,
-or `--progress summary` for a compact dataset-level bar.
 
 Then run the full CPU suite or a PINN stage on CUDA:
 

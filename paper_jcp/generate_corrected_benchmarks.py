@@ -63,16 +63,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--oil-viscosity", type=float, default=3.0)
     parser.add_argument("--cfl", type=float, default=0.45)
     parser.add_argument("--workers", type=int, default=1)
-    parser.add_argument(
-        "--progress",
-        choices=("auto", "none", "summary", "detailed"),
-        default="auto",
-        help=(
-            "auto: layer bar for one worker and dataset bar otherwise; "
-            "summary: dataset-level bar; detailed: full per-layer diagnostics "
-            "and requires --workers 1"
-        ),
-    )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument(
         "--permeability-test2",
@@ -233,7 +223,6 @@ def _run(spec: dict[str, Any]) -> dict[str, Any]:
             options=SolverOptions(cfl=spec["cfl"]),
             progress=bool(spec.get("show_progress", False)),
             progress_description=f"{spec['test']} sample {spec['sample']:03d}",
-            progress_diagnostics=bool(spec.get("progress_diagnostics", False)),
         )
         result.save(output, overwrite=spec["overwrite"])
         status = "generated"
@@ -282,47 +271,15 @@ def main() -> None:
     args = parse_args()
     if args.workers < 1:
         raise ValueError("workers must be positive")
-    if args.progress == "detailed" and args.workers != 1:
-        raise ValueError("--progress detailed requires --workers 1")
     specs = build_specs(args)
     for spec in specs:
-        spec["show_progress"] = (
-            args.workers == 1 and args.progress in {"auto", "detailed"}
-        )
-        spec["progress_diagnostics"] = args.progress == "detailed"
+        spec["show_progress"] = args.workers == 1
     rows: list[dict[str, Any]] = []
     if args.workers == 1:
-        selected_specs = specs
-        summary_bar = None
-        if args.progress == "summary":
-            summary_bar = tqdm(
-                specs,
-                total=len(specs),
-                desc="corrected datasets",
-                unit="run",
-                dynamic_ncols=True,
-            )
-            selected_specs = summary_bar
-        for spec in selected_specs:
+        for spec in specs:
             row = _run(spec)
             rows.append(row)
-            if summary_bar is not None:
-                summary_bar.set_postfix(
-                    test=row["test"],
-                    sample=row["sample"],
-                    substeps=row["substeps"],
-                    sw_max=f"{row['maximum_water_saturation']:.3f}",
-                    refresh=False,
-                )
-                tqdm.write(
-                    f"[{row['status']}] {row['test']} sample {row['sample']}: "
-                    f"{row['path']}"
-                )
-            else:
-                print(
-                    f"[{row['status']}] {row['test']} sample {row['sample']}: "
-                    f"{row['path']}"
-                )
+            print(f"[{row['status']}] {row['test']} sample {row['sample']}: {row['path']}")
     else:
         with ThreadPoolExecutor(max_workers=args.workers) as pool:
             futures = {pool.submit(_run, spec): spec for spec in specs}
@@ -332,18 +289,10 @@ def main() -> None:
                 desc="corrected datasets",
                 unit="run",
                 dynamic_ncols=True,
-                disable=args.progress == "none",
             )
             for future in completed:
                 row = future.result()
                 rows.append(row)
-                completed.set_postfix(
-                    test=row["test"],
-                    sample=row["sample"],
-                    substeps=row["substeps"],
-                    sw_max=f"{row['maximum_water_saturation']:.3f}",
-                    refresh=False,
-                )
                 tqdm.write(
                     f"[{row['status']}] {row['test']} sample {row['sample']}: "
                     f"{row['path']}"
