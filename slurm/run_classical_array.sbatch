@@ -3,7 +3,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
 #SBATCH --partition=rocky
-#SBATCH --time=1:00:00
+#SBATCH --time=00:20:00
 #SBATCH --array=0-39
 #SBATCH --output=slurm/logs/%x-%A_%a.out
 #SBATCH --error=slurm/logs/%x-%A_%a.err
