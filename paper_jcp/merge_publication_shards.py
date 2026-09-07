@@ -13,11 +13,11 @@ ROOT = Path(__file__).resolve().parents[1]
 GENERATED = ROOT / "paper_jcp" / "generated"
 DEFAULT_SEEDS = tuple(range(101, 111))
 EXPERIMENTS = (
-    ("test1_corrected_candidate", "test1"),
-    ("corrected_test2_final", "test2"),
-    ("corrected_test2_classical_strong", "test2"),
-    ("corrected_test3_final", "test3"),
-    ("corrected_test4_final", "test4"),
+    ("test1_corrected_candidate", "test1", "pinn"),
+    ("corrected_test2_final", "test2", "pinn"),
+    ("corrected_test2_classical_strong", "test2", "classical"),
+    ("corrected_test3_final", "test3", "pinn"),
+    ("corrected_test4_final", "test4", "pinn"),
 )
 IDENTITY_COLUMNS = (
     "test_name",
@@ -83,16 +83,27 @@ def main() -> None:
         default="all",
         help="Merge only one test or all publication experiments.",
     )
+    parser.add_argument(
+        "--part",
+        choices=("all", "pinn", "classical"),
+        default="all",
+        help="Merge PINN, classical, or all result namespaces.",
+    )
     args = parser.parse_args()
     seeds = parse_seeds(args.seeds)
     if not seeds:
         raise ValueError("At least one seed is required")
-    experiments = (
-        EXPERIMENTS
-        if args.test == "all"
-        else tuple(item for item in EXPERIMENTS if item[1] == args.test)
+    experiments = tuple(
+        item
+        for item in EXPERIMENTS
+        if (args.test == "all" or item[1] == args.test)
+        and (args.part == "all" or item[2] == args.part)
     )
-    for directory, test in experiments:
+    if not experiments:
+        raise ValueError(
+            f"No publication experiment matches test={args.test}, part={args.part}"
+        )
+    for directory, test, _part in experiments:
         merge_experiment(directory, test, seeds)
 
 

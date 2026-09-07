@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=jcp-t4-pinn
+#SBATCH --job-name=jcp-pinn-test
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=4
 #SBATCH --partition=rocky
@@ -24,6 +24,15 @@ export MKL_NUM_THREADS=1
 SEEDS=(101 102 103 104 105 106 107 108 109 110)
 BUDGETS=(20 50 100 200 500 1000)
 BALANCERS=(h ho)
+TEST_NAME="${JCP_TEST:?JCP_TEST must be test1, test2, test3, or test4}"
+
+case "${TEST_NAME}" in
+  test1|test2|test3|test4) ;;
+  *)
+    echo "JCP_TEST must be test1, test2, test3, or test4; got: ${TEST_NAME}" >&2
+    exit 2
+    ;;
+esac
 
 if (( SLURM_ARRAY_TASK_ID < 0 || SLURM_ARRAY_TASK_ID >= ${#SEEDS[@]} )); then
   echo "Invalid array index: ${SLURM_ARRAY_TASK_ID}" >&2
@@ -50,10 +59,10 @@ if not torch.cuda.is_available():
 print(f"PyTorch={torch.__version__}; CUDA={torch.version.cuda}; GPU={torch.cuda.get_device_name(0)}")
 PY
 
-MODEL_LOG_DIR="slurm/logs/test4-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+MODEL_LOG_DIR="slurm/logs/${TEST_NAME}-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 mkdir -p "${MODEL_LOG_DIR}"
 
-echo "Test 4; seed=${SEED}; epochs=${EPOCHS}; parallel models/GPU=${MODELS_PER_GPU}"
+echo "${TEST_NAME}; seed=${SEED}; epochs=${EPOCHS}; parallel models/GPU=${MODELS_PER_GPU}"
 
 pids=()
 labels=()
@@ -78,7 +87,7 @@ for budget in "${BUDGETS[@]}"; do
     label="n${budget}_${balancer}"
     echo "[start] ${label}"
     python3 -B paper_jcp/run_publication_suite.py \
-      --test test4 \
+      --test "${TEST_NAME}" \
       --part pinn \
       --device cuda:0 \
       --seeds "${SEED}" \
@@ -105,4 +114,4 @@ if (( failed != 0 )); then
   exit 1
 fi
 
-echo "All Test 4 PINN runs finished for seed ${SEED}."
+echo "All ${TEST_NAME} PINN runs finished for seed ${SEED}."

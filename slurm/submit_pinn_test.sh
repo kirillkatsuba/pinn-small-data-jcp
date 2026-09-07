@@ -5,6 +5,15 @@ PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
 JCP_CONDA_ENV="${JCP_CONDA_ENV:-pinn-small-data-jcp}"
 JCP_MODELS_PER_GPU="${JCP_MODELS_PER_GPU:-4}"
 JCP_EPOCHS="${JCP_EPOCHS:-50000}"
+TEST_NAME="${1:-${JCP_TEST:-}}"
+
+case "${TEST_NAME}" in
+  test1|test2|test3|test4) ;;
+  *)
+    echo "Usage: bash slurm/submit_pinn_test.sh test1|test2|test3|test4" >&2
+    exit 2
+    ;;
+esac
 mkdir -p "${PROJECT_DIR}/slurm/logs"
 
 common_args=()
@@ -26,16 +35,19 @@ if [[ -n "${JCP_PINN_TIME:-}" ]]; then
   gpu_args+=("--time=${JCP_PINN_TIME}")
 fi
 
-export_values="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_MODELS_PER_GPU=${JCP_MODELS_PER_GPU},JCP_EPOCHS=${JCP_EPOCHS}"
+export_values="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_TEST=${TEST_NAME},JCP_MODELS_PER_GPU=${JCP_MODELS_PER_GPU},JCP_EPOCHS=${JCP_EPOCHS}"
 
 pinn_submission=$(sbatch --parsable "${common_args[@]}" "${gpu_args[@]}" \
-  --export="${export_values}" slurm/run_test4_pinn_array.sbatch)
+  --job-name="jcp-${TEST_NAME}-pinn" \
+  --export="${export_values}" slurm/run_pinn_test_array.sbatch)
 pinn_job="${pinn_submission%%;*}"
 
 merge_submission=$(sbatch --parsable "${common_args[@]}" "${cpu_args[@]}" \
+  --job-name="jcp-${TEST_NAME}-merge" \
   --dependency="afterok:${pinn_job}" \
-  --export="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV}" \
-  slurm/merge_test4_pinn.sbatch)
+  --export="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_TEST=${TEST_NAME}" \
+  slurm/merge_pinn_test.sbatch)
 merge_job="${merge_submission%%;*}"
 
-printf 'test4_pinn_array=%s\ntest4_merge=%s\n' "${pinn_job}" "${merge_job}"
+printf '%s_pinn_array=%s\n%s_merge=%s\n' \
+  "${TEST_NAME}" "${pinn_job}" "${TEST_NAME}" "${merge_job}"

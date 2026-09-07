@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#SBATCH --job-name=jcp-t4-merge
+#SBATCH --job-name=jcp-pinn-merge
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --partition=rocky
@@ -15,4 +15,8 @@ source slurm/activate_conda.sh
 
 export PYTHONUNBUFFERED=1
 
-python3 -B paper_jcp/merge_publication_shards.py --test test4
+TEST_NAME="${JCP_TEST:?JCP_TEST must be test1, test2, test3, or test4}"
+
+python3 -B paper_jcp/merge_publication_shards.py \
+  --test "${TEST_NAME}" \
+  --part pinn
