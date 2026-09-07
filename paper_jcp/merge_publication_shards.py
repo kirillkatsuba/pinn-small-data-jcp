@@ -35,10 +35,21 @@ def parse_seeds(value: str) -> tuple[int, ...]:
 
 def merge_experiment(directory: str, test: str, seeds: tuple[int, ...]) -> Path:
     experiment_dir = GENERATED / directory
-    shards = [experiment_dir / f"unified_{test}_seed{seed}.csv" for seed in seeds]
-    missing = [path for path in shards if not path.exists()]
+    shards: list[Path] = []
+    missing: list[str] = []
+    for seed in seeds:
+        stem = f"unified_{test}_seed{seed}"
+        seed_shards = sorted(
+            path
+            for path in experiment_dir.glob(f"{stem}*.csv")
+            if path.stem == stem or path.stem.startswith(f"{stem}_")
+        )
+        if seed_shards:
+            shards.extend(seed_shards)
+        else:
+            missing.append(str(experiment_dir / f"{stem}.csv"))
     if missing:
-        formatted = "\n".join(str(path) for path in missing)
+        formatted = "\n".join(missing)
         raise FileNotFoundError(f"Missing result shards:\n{formatted}")
 
     tables = [pd.read_csv(path) for path in shards]
@@ -66,11 +77,22 @@ def main() -> None:
         "--seeds",
         default=",".join(str(seed) for seed in DEFAULT_SEEDS),
     )
+    parser.add_argument(
+        "--test",
+        choices=("all", "test1", "test2", "test3", "test4"),
+        default="all",
+        help="Merge only one test or all publication experiments.",
+    )
     args = parser.parse_args()
     seeds = parse_seeds(args.seeds)
     if not seeds:
         raise ValueError("At least one seed is required")
-    for directory, test in EXPERIMENTS:
+    experiments = (
+        EXPERIMENTS
+        if args.test == "all"
+        else tuple(item for item in EXPERIMENTS if item[1] == args.test)
+    )
+    for directory, test in experiments:
         merge_experiment(directory, test, seeds)
 
 

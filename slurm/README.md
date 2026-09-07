@@ -97,3 +97,30 @@ The runners are resumable. Re-submitting a completed array task skips rows
 whose configuration IDs are already present. The configuration ID includes the
 epoch count, so a 50,000-epoch run cannot be mistaken for an older 10,000-epoch
 run.
+
+## Test 4 PINN only: N=20--1000
+
+The dedicated launcher runs Test 4 for budgets `20,50,100,200,500,1000`, seeds
+`101`--`110`, and both H-PINN and HO-PINN. One array task owns one seed. To make
+better use of a powerful GPU, four independent models share it by default;
+every model writes an isolated CSV shard and log file.
+
+```bash
+JCP_MODELS_PER_GPU=4 bash slurm/submit_test4_pinn.sh
+```
+
+The launcher submits the ten-task GPU array and a dependent merge job. Override
+the 50,000 epochs, concurrency, or the checked-in 30-minute limit when needed:
+
+```bash
+JCP_EPOCHS=50000 \
+JCP_MODELS_PER_GPU=8 \
+JCP_PINN_TIME=12:00:00 \
+bash slurm/submit_test4_pinn.sh
+```
+
+Start with four concurrent models. Increase to eight only if `nvidia-smi` shows
+substantial free memory and the elapsed time per model does not increase too
+much. Per-model logs are stored under `slurm/logs/test4-<array-job>_<task>/`.
+The merged metrics are written to
+`paper_jcp/generated/corrected_test4_final/unified_test4.csv`.

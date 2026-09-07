@@ -20,6 +20,8 @@ DEFAULT_DATA_ROOT = ROOT / "paper_jcp" / "generated" / "publication_data"
 TESTS = ("test1", "test2", "test3", "test4")
 DEFAULT_SEEDS = "101,102,103,104,105,106,107,108,109,110"
 DEFAULT_EPOCHS = 50_000
+DEFAULT_BUDGETS = "20,50,100,200,500,1000"
+DEFAULT_BALANCERS = "h,ho"
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,6 +33,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--seeds", default=DEFAULT_SEEDS)
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS)
+    parser.add_argument(
+        "--budgets",
+        default=DEFAULT_BUDGETS,
+        help="Comma-separated label budgets selected from 20,50,100,200,500,1000.",
+    )
+    parser.add_argument(
+        "--balancers",
+        default=DEFAULT_BALANCERS,
+        help="Comma-separated PINN loss balancers: h, ho, or h,ho.",
+    )
     parser.add_argument(
         "--result-suffix",
         default="",
@@ -52,9 +64,9 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def common_design(seeds: str) -> list[str]:
+def common_design(seeds: str, budgets: str) -> list[str]:
     return [
-        "--budgets", "20,50,100,200,500,1000",
+        "--budgets", budgets,
         "--seeds", seeds,
         "--time-fraction", "0.7",
         "--time-bins", "10",
@@ -62,13 +74,17 @@ def common_design(seeds: str) -> list[str]:
 
 
 def pinn_configuration(
-    workers: int, device: str, deterministic: bool, epochs: int
+    workers: int,
+    device: str,
+    deterministic: bool,
+    epochs: int,
+    balancers: str,
 ) -> list[str]:
     return [
         "--hidden-dim", "128",
         "--depth", "6",
         "--activation", "gelu",
-        "--balancers", "h,ho",
+        "--balancers", balancers,
         "--l0-data", "0.03",
         "--l0-ibc", "0.003",
         "--orthogonal-floor", "0.25",
@@ -119,6 +135,8 @@ def command(
     epochs: int,
     result_suffix: str,
     methods: str | None = None,
+    budgets: str = DEFAULT_BUDGETS,
+    balancers: str = DEFAULT_BALANCERS,
 ) -> list[str]:
     result = [
         sys.executable,
@@ -127,14 +145,16 @@ def command(
         "--experiment-name", experiment_name(test, part),
         "--test", test,
         *corrected_data(test, data_root),
-        *common_design(seeds),
+        *common_design(seeds, budgets),
     ]
     if result_suffix:
         result.extend(("--result-suffix", result_suffix))
     if part == "pinn":
         result.extend(
             (
-                *pinn_configuration(workers, device, deterministic, epochs),
+                *pinn_configuration(
+                    workers, device, deterministic, epochs, balancers
+                ),
                 "--skip-classical",
             )
         )
@@ -164,13 +184,16 @@ def commands_for(
     seeds: str,
     epochs: int,
     result_suffix: str,
+    budgets: str,
+    balancers: str,
 ) -> list[list[str]]:
     commands: list[list[str]] = []
     if part in {"pinn", "all"}:
         commands.append(
             command(
                 test, "pinn", workers, device, deterministic, data_root,
-                seeds, epochs, result_suffix,
+                seeds, epochs, result_suffix, budgets=budgets,
+                balancers=balancers,
             )
         )
     if part in {"classical", "all"}:
@@ -178,7 +201,8 @@ def commands_for(
             commands.append(
                 command(
                     test, "classical", workers, device, deterministic, data_root,
-                    seeds, epochs, result_suffix,
+                    seeds, epochs, result_suffix, budgets=budgets,
+                    balancers=balancers,
                 )
             )
         else:
@@ -186,13 +210,13 @@ def commands_for(
             commands.append(
                 command(
                     test, "classical", workers, device, deterministic, data_root,
-                    seeds, epochs, result_suffix, "XGB,SVM"
+                    seeds, epochs, result_suffix, "XGB,SVM", budgets, balancers
                 )
             )
             commands.append(
                 command(
                     test, "classical", workers, device, deterministic, data_root,
-                    seeds, epochs, result_suffix, "GP",
+                    seeds, epochs, result_suffix, "GP", budgets, balancers,
                 )
             )
     return commands
@@ -202,6 +226,10 @@ def main() -> None:
     args = parse_args()
     if args.workers < 1:
         raise ValueError("workers must be positive")
+    if not args.budgets.strip():
+        raise ValueError("budgets must not be empty")
+    if not args.balancers.strip():
+        raise ValueError("balancers must not be empty")
     selected = TESTS if args.test == "all" else (args.test,)
     for test in selected:
         for invocation in commands_for(
@@ -214,6 +242,8 @@ def main() -> None:
             args.seeds,
             args.epochs,
             args.result_suffix,
+            args.budgets,
+            args.balancers,
         ):
             print(f"\n$ {shlex.join(invocation)}", flush=True)
             if not args.dry_run:

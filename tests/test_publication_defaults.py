@@ -9,6 +9,8 @@ import pandas as pd
 
 from paper_jcp.merge_publication_shards import merge_experiment
 from paper_jcp.run_publication_suite import (
+    DEFAULT_BALANCERS,
+    DEFAULT_BUDGETS,
     DEFAULT_EPOCHS,
     DEFAULT_SEEDS,
     command,
@@ -23,6 +25,8 @@ class PublicationDefaultTests(unittest.TestCase):
             tuple(range(101, 111)),
         )
         self.assertEqual(DEFAULT_EPOCHS, 50_000)
+        self.assertEqual(DEFAULT_BUDGETS, "20,50,100,200,500,1000")
+        self.assertEqual(DEFAULT_BALANCERS, "h,ho")
         self.assertEqual(TrainConfig().epochs, 50_000)
 
     def test_epoch_count_is_part_of_configuration_identity(self) -> None:
@@ -49,6 +53,24 @@ class PublicationDefaultTests(unittest.TestCase):
         self.assertIn("--epochs 50000", rendered)
         self.assertIn("--result-suffix seed107", rendered)
 
+    def test_publication_command_can_select_one_budget_and_balancer(self) -> None:
+        invocation = command(
+            "test4",
+            "pinn",
+            1,
+            "cuda:0",
+            True,
+            Path("data"),
+            "101",
+            50_000,
+            "seed101_n20_h",
+            budgets="20",
+            balancers="h",
+        )
+        rendered = " ".join(str(item) for item in invocation)
+        self.assertIn("--budgets 20", rendered)
+        self.assertIn("--balancers h", rendered)
+
     def test_seed_shards_merge_into_canonical_table(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             generated = Path(directory)
@@ -70,6 +92,30 @@ class PublicationDefaultTests(unittest.TestCase):
             merged = pd.read_csv(output)
             self.assertEqual(len(merged), 4)
             self.assertEqual(set(merged["seed"]), {101, 102})
+
+    def test_split_budget_shards_merge_into_canonical_table(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            generated = Path(directory)
+            experiment = generated / "example"
+            experiment.mkdir()
+            for budget in (20, 50):
+                pd.DataFrame(
+                    {
+                        "test_name": ["test4"],
+                        "seed": [101],
+                        "n_train": [budget],
+                        "method": ["H-PINN"],
+                        "config_id": ["candidate_e50000"],
+                        "evaluation_region": ["interpolation"],
+                    }
+                ).to_csv(
+                    experiment / f"unified_test4_seed101_n{budget}_h.csv",
+                    index=False,
+                )
+            with patch("paper_jcp.merge_publication_shards.GENERATED", generated):
+                output = merge_experiment("example", "test4", (101,))
+            merged = pd.read_csv(output)
+            self.assertEqual(set(merged["n_train"]), {20, 50})
 
 
 if __name__ == "__main__":
