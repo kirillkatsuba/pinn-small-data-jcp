@@ -10,6 +10,11 @@ The jobs are split into four stages:
    the PINN array succeeds.
 4. `merge_results.sbatch` validates and merges all seed-specific CSV shards.
 
+The classical array uses the `extensive` search profile with expanding-window
+time cross-validation by default. Override `JCP_CLASSICAL_TUNING_PROFILE`,
+`JCP_CLASSICAL_CV`, or `JCP_CLASSICAL_METHODS` at submission time when a
+smaller diagnostic run is required.
+
 The checked-in jobs use the target server settings: partition `rocky`, one GPU
 requested with `--gpus=1` for PINN jobs, and the time limits recorded in the
 four `.sbatch` files. An account can still be supplied at submission time.
@@ -92,6 +97,26 @@ Array task `0` is Test 1 / seed 101, tasks `0`--`9` cover Test 1, `10`--`19`
 cover Test 2, `20`--`29` cover Test 3, and `30`--`39` cover Test 4. Every task
 writes a separate `*_seed<seed>.csv`, so concurrent writes are safe. The final
 merge job creates the canonical `unified_test*.csv` files.
+
+If Test 1 is already complete, submit only Tests 2--4 with the enlarged search:
+
+```bash
+sbatch --array=10-39 --time=12:00:00 slurm/run_classical_array.sbatch
+```
+
+To stage the expensive Gaussian-process fits separately, first run XGB and SVM:
+
+```bash
+JCP_CLASSICAL_METHODS=XGB,SVM \
+sbatch --array=10-39 --time=12:00:00 slurm/run_classical_array.sbatch
+```
+
+Then submit GP using the same seed shards; completed rows are preserved:
+
+```bash
+JCP_CLASSICAL_METHODS=GP \
+sbatch --array=10-39 --time=12:00:00 slurm/run_classical_array.sbatch
+```
 
 The runners are resumable. Re-submitting a completed array task skips rows
 whose configuration IDs are already present. The configuration ID includes the
