@@ -12,13 +12,12 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[1]
 GENERATED = ROOT / "paper_jcp" / "generated"
 DEFAULT_SEEDS = tuple(range(101, 111))
-EXPERIMENTS = (
-    ("test1_corrected_candidate", "test1", "pinn"),
-    ("corrected_test2_final", "test2", "pinn"),
-    ("corrected_test2_classical_strong", "test2", "classical"),
-    ("corrected_test3_final", "test3", "pinn"),
-    ("corrected_test4_final", "test4", "pinn"),
-)
+PINN_EXPERIMENTS = {
+    "test1": "test1_corrected_candidate",
+    "test2": "corrected_test2_final",
+    "test3": "corrected_test3_final",
+    "test4": "corrected_test4_final",
+}
 IDENTITY_COLUMNS = (
     "test_name",
     "seed",
@@ -89,16 +88,39 @@ def main() -> None:
         default="all",
         help="Merge PINN, classical, or all result namespaces.",
     )
+    parser.add_argument(
+        "--classical-tuning-profile",
+        choices=("standard", "strong", "extensive"),
+        default="extensive",
+    )
+    parser.add_argument(
+        "--classical-cv",
+        choices=("random", "time"),
+        default="time",
+    )
     args = parser.parse_args()
     seeds = parse_seeds(args.seeds)
     if not seeds:
         raise ValueError("At least one seed is required")
-    experiments = tuple(
-        item
-        for item in EXPERIMENTS
-        if (args.test == "all" or item[1] == args.test)
-        and (args.part == "all" or item[2] == args.part)
+    selected_tests = tuple(
+        test
+        for test in PINN_EXPERIMENTS
+        if args.test == "all" or test == args.test
     )
+    experiments: list[tuple[str, str, str]] = []
+    if args.part in {"all", "pinn"}:
+        experiments.extend(
+            (PINN_EXPERIMENTS[test], test, "pinn") for test in selected_tests
+        )
+    if args.part in {"all", "classical"}:
+        experiments.extend(
+            (
+                f"{test}_classical_{args.classical_tuning_profile}_{args.classical_cv}",
+                test,
+                "classical",
+            )
+            for test in selected_tests
+        )
     if not experiments:
         raise ValueError(
             f"No publication experiment matches test={args.test}, part={args.part}"

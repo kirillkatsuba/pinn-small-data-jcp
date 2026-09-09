@@ -118,6 +118,14 @@ JCP_CLASSICAL_METHODS=GP \
 sbatch --array=10-39 --time=12:00:00 slurm/run_classical_array.sbatch
 ```
 
+After every array has completed, merge one test at a time (replace `test2` by
+`test3` and `test4`):
+
+```bash
+JCP_MERGE_TEST=test2 JCP_MERGE_PART=classical \
+sbatch slurm/merge_results.sbatch
+```
+
 The runners are resumable. Re-submitting a completed array task skips rows
 whose configuration IDs are already present. The configuration ID includes the
 epoch count, so a 50,000-epoch run cannot be mistaken for an older 10,000-epoch
