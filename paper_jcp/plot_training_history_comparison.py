@@ -2,10 +2,9 @@
 """Compare PINN loss components and dynamic weights across two protocols.
 
 The additional protocol contains N=0 and N=20 runs trained for 50,000
-epochs with a fixed residual batch.  The publication protocol contains
-N=20,...,1000 runs trained for 10,000 epochs with N_r=2N.  Curves are
-aggregated over seeds 101--103 and plotted against normalized optimization
-progress so that the complete schedules can be inspected in one figure.
+epochs with a fixed residual batch.  The cluster protocol contains
+N=20,...,1000 runs trained for 50,000 epochs with N_r=2N.  Curves use every
+available seed and are plotted against normalized optimization progress.
 """
 
 from __future__ import annotations
@@ -54,22 +53,22 @@ STYLES = {
         "Additional: N=20", "#D55E00", "-", 2.2, 10
     ),
     ("publication", 20): SeriesStyle(
-        "Publication: N=20", "#D55E00", "--", 1.35, 7
+        "Cluster: N=20", "#D55E00", "--", 1.35, 7
     ),
     ("publication", 50): SeriesStyle(
-        "Publication: N=50", "#E69F00", "--", 1.35, 6
+        "Cluster: N=50", "#E69F00", "--", 1.35, 6
     ),
     ("publication", 100): SeriesStyle(
-        "Publication: N=100", "#009E73", "--", 1.35, 6
+        "Cluster: N=100", "#009E73", "--", 1.35, 6
     ),
     ("publication", 200): SeriesStyle(
-        "Publication: N=200", "#0072B2", "--", 1.35, 6
+        "Cluster: N=200", "#0072B2", "--", 1.35, 6
     ),
     ("publication", 500): SeriesStyle(
-        "Publication: N=500", "#56B4E9", "--", 1.35, 6
+        "Cluster: N=500", "#56B4E9", "--", 1.35, 6
     ),
     ("publication", 1000): SeriesStyle(
-        "Publication: N=1000", "#CC79A7", "--", 1.35, 6
+        "Cluster: N=1000", "#CC79A7", "--", 1.35, 6
     ),
 }
 
@@ -151,8 +150,7 @@ def load_all_histories(
     )
     histories = pd.concat([additional, publication], ignore_index=True, sort=False)
     histories = histories[
-        histories["seed"].isin([101, 102, 103])
-        & histories["method"].isin(["H-PINN", "HO-PINN"])
+        histories["method"].isin(["H-PINN", "HO-PINN"])
     ].copy()
     return histories
 
@@ -299,7 +297,7 @@ def plot_training_losses(histories: pd.DataFrame, output_dir: Path) -> None:
         axes,
         output_dir,
         "training_loss_components_comparison",
-        "Lines are seed means; bands are ±1 sample SD. Additional runs: 50k epochs, fixed N_r=128. Publication runs: 10k epochs, N_r=2N. N=0 has no data term.",
+        "Lines are seed means; bands are ±1 sample SD. Additional N=0/20: 3 seeds, 50k epochs, fixed N_r=128. Cluster N=20–1000: 10 seeds, 50k epochs, N_r=2N. N=0 has no data term.",
     )
 
 
@@ -334,7 +332,7 @@ def plot_validation_losses(histories: pd.DataFrame, output_dir: Path) -> None:
                 ax.text(
                     0.04,
                     0.07,
-                    "Old data-validation\nnot recorded",
+                    "Cluster data-validation\nnot recorded",
                     transform=ax.transAxes,
                     fontsize=7.5,
                     color="#666666",
@@ -345,7 +343,7 @@ def plot_validation_losses(histories: pd.DataFrame, output_dir: Path) -> None:
         axes,
         output_dir,
         "validation_loss_components_comparison",
-        "IBC/PDE use fixed collocation sets. The additional data curve re-evaluates the same N=20 labels after each logged update; it is not an independent holdout. Old data-validation histories were not stored.",
+        "IBC/PDE use fixed collocation sets. The additional data curve re-evaluates the same N=20 labels after each logged update; it is not an independent holdout. Cluster data-validation histories were not stored.",
     )
 
 
@@ -403,7 +401,7 @@ def parse_args() -> argparse.Namespace:
         "--output-dir",
         type=Path,
         default=PAPER
-        / "generated/zero_label_test12_e50k_nr128/figures/training_history_comparison",
+        / "generated/zero_label_test12_e50k_nr128/figures/cluster_50k_comparison",
     )
     return parser.parse_args()
 
@@ -418,8 +416,8 @@ def main() -> None:
     expected = {
         ("additional", "test1"): 12,
         ("additional", "test2"): 12,
-        ("publication", "test1"): 36,
-        ("publication", "test2"): 36,
+        ("publication", "test1"): 120,
+        ("publication", "test2"): 120,
     }
     observed = (
         histories[["protocol", "test_name", "n_train", "seed", "method"]]

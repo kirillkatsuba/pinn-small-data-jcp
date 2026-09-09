@@ -80,16 +80,32 @@ def _xgb(profile: str, cv, seed: int, target_index: int):
             },
             scoring="neg_mean_squared_error", cv=cv, n_jobs=1,
         )
-    return RandomizedSearchCV(
-        base,
-        {
+    if profile == "strong":
+        distributions = {
             "n_estimators": [100, 300, 600, 1000], "max_depth": [2, 3, 4, 6],
             "learning_rate": [0.01, 0.03, 0.05, 0.1],
             "min_child_weight": [1, 3, 5], "subsample": [0.7, 0.85, 1.0],
             "colsample_bytree": [0.7, 0.9, 1.0], "reg_alpha": [0.0, 0.01, 0.1],
             "reg_lambda": [0.1, 1.0, 10.0],
-        },
-        n_iter=32, scoring="neg_mean_squared_error", cv=cv, n_jobs=1,
+        }
+        n_iter = 32
+    else:
+        distributions = {
+            "n_estimators": [100, 200, 400, 700, 1000, 1400, 1800],
+            "max_depth": [2, 3, 4, 5, 6, 8],
+            "learning_rate": [0.005, 0.01, 0.02, 0.03, 0.05, 0.075, 0.1],
+            "min_child_weight": [1, 2, 3, 5, 8, 12],
+            "subsample": [0.6, 0.75, 0.9, 1.0],
+            "colsample_bytree": [0.6, 0.75, 0.9, 1.0],
+            "gamma": [0.0, 1e-3, 1e-2, 0.1],
+            "reg_alpha": [0.0, 1e-3, 1e-2, 0.1, 1.0],
+            "reg_lambda": [0.01, 0.1, 1.0, 10.0, 100.0],
+        }
+        n_iter = 96
+    return RandomizedSearchCV(
+        base,
+        distributions,
+        n_iter=n_iter, scoring="neg_mean_squared_error", cv=cv, n_jobs=1,
         random_state=seed + target_index,
     )
 
@@ -108,16 +124,34 @@ def _svm(profile: str, cv, seed: int, target_index: int):
     transformed = TransformedTargetRegressor(
         regressor=pipeline, transformer=StandardScaler()
     )
-    return RandomizedSearchCV(
-        transformed,
-        {
+    if profile == "strong":
+        distributions = {
             "regressor__svr__C": [0.1, 1.0, 10.0, 100.0, 1000.0],
             "regressor__svr__gamma": [
                 "scale", "auto", 0.01, 0.03, 0.1, 0.3, 1.0, 3.0, 10.0
             ],
             "regressor__svr__epsilon": [1e-4, 1e-3, 1e-2, 0.03, 0.05, 0.1],
-        },
-        n_iter=40, scoring="neg_mean_squared_error", cv=cv, n_jobs=1,
+        }
+        n_iter = 40
+    else:
+        distributions = {
+            "regressor__svr__C": [
+                0.03, 0.1, 0.3, 1.0, 3.0, 10.0, 30.0,
+                100.0, 300.0, 1000.0, 3000.0,
+            ],
+            "regressor__svr__gamma": [
+                "scale", "auto", 0.003, 0.01, 0.03, 0.1,
+                0.3, 1.0, 3.0, 10.0, 30.0,
+            ],
+            "regressor__svr__epsilon": [
+                1e-5, 1e-4, 1e-3, 3e-3, 1e-2, 0.03, 0.05, 0.1,
+            ],
+        }
+        n_iter = 96
+    return RandomizedSearchCV(
+        transformed,
+        distributions,
+        n_iter=n_iter, scoring="neg_mean_squared_error", cv=cv, n_jobs=1,
         random_state=seed + target_index,
     )
 
@@ -133,7 +167,7 @@ def _gp(profile: str, cv, seed: int, input_dim: int):
         ("scale", StandardScaler()),
         ("gp", GaussianProcessRegressor(
             kernel=rbf, alpha=1e-6, normalize_y=True,
-            n_restarts_optimizer=1 if profile == "standard" else 2,
+            n_restarts_optimizer={"standard": 1, "strong": 2, "extensive": 3}[profile],
             random_state=seed,
         )),
     ])
@@ -145,8 +179,12 @@ def _gp(profile: str, cv, seed: int, input_dim: int):
         kernel(Matern(np.ones(input_dim), (1e-2, 1e2), nu=2.5)),
         kernel(RationalQuadratic(alpha=1.0, length_scale=1.0)),
     ]
+    alphas = [1e-8, 1e-6, 1e-4]
+    if profile == "extensive":
+        kernels.insert(1, kernel(Matern(np.ones(input_dim), (1e-2, 1e2), nu=0.5)))
+        alphas = [1e-10, 1e-8, 1e-6, 1e-4]
     return GridSearchCV(
-        base, {"gp__kernel": kernels, "gp__alpha": [1e-8, 1e-6, 1e-4]},
+        base, {"gp__kernel": kernels, "gp__alpha": alphas},
         scoring="neg_mean_squared_error", cv=cv, n_jobs=1,
     )
 
@@ -162,8 +200,10 @@ def tune_classical(
     return_metadata: bool = False,
 ):
     """Tune one regressor per output without accessing final evaluation data."""
-    if tuning_profile not in {"standard", "strong"}:
-        raise ValueError("tuning_profile must be 'standard' or 'strong'")
+    if tuning_profile not in {"standard", "strong", "extensive"}:
+        raise ValueError(
+            "tuning_profile must be 'standard', 'strong', or 'extensive'"
+        )
     y_matrix = y_train if y_train.ndim == 2 else y_train.reshape(-1, 1)
     multi = y_train.ndim == 2
     cv = classical_cv_splits(x_train, seed, cv_strategy)

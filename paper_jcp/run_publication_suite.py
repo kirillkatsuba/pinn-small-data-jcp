@@ -44,6 +44,23 @@ def parse_args() -> argparse.Namespace:
         help="Comma-separated PINN loss balancers: h, ho, or h,ho.",
     )
     parser.add_argument(
+        "--classical-tuning-profile",
+        choices=("standard", "strong", "extensive"),
+        default="strong",
+        help="Hyperparameter-search size for classical models.",
+    )
+    parser.add_argument(
+        "--classical-cv",
+        choices=("random", "time"),
+        default="time",
+        help="Use expanding-window time CV for the final interpolation/extrapolation study.",
+    )
+    parser.add_argument(
+        "--classical-methods",
+        default="XGB,SVM,GP",
+        help="Comma-separated subset of XGB,SVM,GP for staged classical runs.",
+    )
+    parser.add_argument(
         "--result-suffix",
         default="",
         help="Optional suffix for a per-job result CSV shard, e.g. seed101.",
@@ -116,11 +133,16 @@ def corrected_data(test: str, data_root: Path) -> list[str]:
     return result
 
 
-def experiment_name(test: str, part: str) -> str:
+def experiment_name(
+    test: str,
+    part: str,
+    classical_profile: str = "strong",
+    classical_cv: str = "time",
+) -> str:
+    if part == "classical":
+        return f"{test}_classical_{classical_profile}_{classical_cv}"
     if test == "test1":
         return "test1_corrected_candidate"
-    if test == "test2" and part == "classical":
-        return "corrected_test2_classical_strong"
     return f"corrected_{test}_final"
 
 
@@ -137,12 +159,16 @@ def command(
     methods: str | None = None,
     budgets: str = DEFAULT_BUDGETS,
     balancers: str = DEFAULT_BALANCERS,
+    classical_profile: str = "strong",
+    classical_cv: str = "time",
 ) -> list[str]:
     result = [
         sys.executable,
         "-B",
         str(RUNNER),
-        "--experiment-name", experiment_name(test, part),
+        "--experiment-name", experiment_name(
+            test, part, classical_profile, classical_cv
+        ),
         "--test", test,
         *corrected_data(test, data_root),
         *common_design(seeds, budgets),
@@ -159,11 +185,10 @@ def command(
             )
         )
     elif part == "classical":
-        profile, cv = (("standard", "random") if test == "test1" else ("strong", "time"))
         result.extend(
             (
-                "--classical-tuning-profile", profile,
-                "--classical-cv", cv,
+                "--classical-tuning-profile", classical_profile,
+                "--classical-cv", classical_cv,
                 "--classical-methods", methods or "XGB,SVM,GP",
                 "--skip-pinn",
                 "--workers", "1",
@@ -186,6 +211,9 @@ def commands_for(
     result_suffix: str,
     budgets: str,
     balancers: str,
+    classical_profile: str,
+    classical_cv: str,
+    classical_methods: str,
 ) -> list[list[str]]:
     commands: list[list[str]] = []
     if part in {"pinn", "all"}:
@@ -197,28 +225,40 @@ def commands_for(
             )
         )
     if part in {"classical", "all"}:
+        selected_methods = tuple(
+            value.strip().upper()
+            for value in classical_methods.split(",")
+            if value.strip()
+        )
         if test == "test1":
             commands.append(
                 command(
                     test, "classical", workers, device, deterministic, data_root,
                     seeds, epochs, result_suffix, budgets=budgets,
-                    balancers=balancers,
+                    balancers=balancers, classical_profile=classical_profile,
+                    classical_cv=classical_cv,
+                    methods=",".join(selected_methods),
                 )
             )
         else:
             # Keep CSV writes sequential and make the expensive GP stage explicit.
-            commands.append(
-                command(
-                    test, "classical", workers, device, deterministic, data_root,
-                    seeds, epochs, result_suffix, "XGB,SVM", budgets, balancers
+            non_gp = tuple(method for method in selected_methods if method != "GP")
+            if non_gp:
+                commands.append(
+                    command(
+                        test, "classical", workers, device, deterministic, data_root,
+                        seeds, epochs, result_suffix, ",".join(non_gp), budgets,
+                        balancers, classical_profile, classical_cv,
+                    )
                 )
-            )
-            commands.append(
-                command(
-                    test, "classical", workers, device, deterministic, data_root,
-                    seeds, epochs, result_suffix, "GP", budgets, balancers,
+            if "GP" in selected_methods:
+                commands.append(
+                    command(
+                        test, "classical", workers, device, deterministic, data_root,
+                        seeds, epochs, result_suffix, "GP", budgets, balancers,
+                        classical_profile, classical_cv,
+                    )
                 )
-            )
     return commands
 
 
@@ -230,6 +270,15 @@ def main() -> None:
         raise ValueError("budgets must not be empty")
     if not args.balancers.strip():
         raise ValueError("balancers must not be empty")
+    classical_methods = tuple(
+        value.strip().upper()
+        for value in args.classical_methods.split(",")
+        if value.strip()
+    )
+    if not classical_methods or any(
+        value not in {"XGB", "SVM", "GP"} for value in classical_methods
+    ):
+        raise ValueError("classical methods must be selected from XGB,SVM,GP")
     selected = TESTS if args.test == "all" else (args.test,)
     for test in selected:
         for invocation in commands_for(
@@ -244,6 +293,9 @@ def main() -> None:
             args.result_suffix,
             args.budgets,
             args.balancers,
+            args.classical_tuning_profile,
+            args.classical_cv,
+            ",".join(classical_methods),
         ):
             print(f"\n$ {shlex.join(invocation)}", flush=True)
             if not args.dry_run:

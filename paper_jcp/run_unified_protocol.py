@@ -449,9 +449,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument(
         "--classical-tuning-profile",
-        choices=("standard", "strong"),
+        choices=("standard", "strong", "extensive"),
         default="standard",
-        help="Compact legacy search or expanded publication-strength search.",
+        help=(
+            "Compact legacy, publication-strength, or enlarged high-precision search."
+        ),
     )
     parser.add_argument(
         "--classical-cv",
