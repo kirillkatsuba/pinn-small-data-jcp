@@ -1158,7 +1158,7 @@ def loss_components(
 
 
 class VanillaPINNLossBalancer:
-    """Equal, fixed weights for the data, IBC, and PDE loss components."""
+    """Unweighted sum of the data, IBC, and PDE loss components."""
 
     @staticmethod
     def compute_weights(
@@ -1168,14 +1168,14 @@ class VanillaPINNLossBalancer:
         loss_pde: torch.Tensor,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict[str, float]]:
         del model, loss_ibc, loss_pde
-        weight = loss_mse.detach().new_tensor(1.0 / 3.0)
+        weight = loss_mse.detach().new_tensor(1.0)
         diagnostics = {
             "a_mse": 1.0,
             "a_ibc": 1.0,
             "a_pde": 1.0,
-            "w_mse": 1.0 / 3.0,
-            "w_ibc": 1.0 / 3.0,
-            "w_pde": 1.0 / 3.0,
+            "w_mse": 1.0,
+            "w_ibc": 1.0,
+            "w_pde": 1.0,
         }
         return weight, weight.clone(), weight.clone(), diagnostics
 

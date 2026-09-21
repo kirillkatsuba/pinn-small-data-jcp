@@ -22,7 +22,7 @@ from paper_jcp.unified_protocol import (
 
 
 class VanillaPINNTests(unittest.TestCase):
-    def test_vanilla_balancer_uses_fixed_equal_weights(self) -> None:
+    def test_vanilla_balancer_uses_unit_weights(self) -> None:
         model = torch.nn.Linear(1, 1)
         prediction = model(torch.ones(1, 1)).sum()
         losses = (
@@ -35,7 +35,7 @@ class VanillaPINNTests(unittest.TestCase):
         weights = balancer.compute_weights(model, *losses)
 
         for weight in weights[:3]:
-            self.assertAlmostEqual(float(weight), 1.0 / 3.0, places=7)
+            self.assertEqual(float(weight), 1.0)
             self.assertFalse(weight.requires_grad)
         self.assertEqual(weights[3]["a_mse"], 1.0)
         self.assertEqual(weights[3]["a_ibc"], 1.0)
@@ -63,7 +63,7 @@ class VanillaPINNTests(unittest.TestCase):
         rendered = " ".join(str(item) for item in invocation)
         self.assertIn("--balancers vanilla", rendered)
 
-    def test_vanilla_training_writes_portable_checkpoint_and_equal_history(self) -> None:
+    def test_vanilla_training_writes_portable_checkpoint_and_unit_history(self) -> None:
         bundle = build_unified_bundle(
             "test1", interpolation_size=16, extrapolation_size=16
         )
@@ -97,8 +97,11 @@ class VanillaPINNTests(unittest.TestCase):
             self.assertTrue(
                 np.allclose(
                     history[["weight_data", "weight_ibc", "weight_pde"]],
-                    1.0 / 3.0,
+                    1.0,
                 )
+            )
+            self.assertTrue(
+                np.allclose(history["balanced_total"], history["raw_total"])
             )
             prediction = predict_pinn("test1", model, bundle.interpolation_x[:4])
             self.assertTrue(np.isfinite(prediction).all())
