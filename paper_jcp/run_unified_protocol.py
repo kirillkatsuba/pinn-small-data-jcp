@@ -192,7 +192,11 @@ def run_test(
 
             if run_pinn:
                 for balance_mode in balancers:
-                    method = "H-PINN" if balance_mode == "h" else "HO-PINN"
+                    method = {
+                        "vanilla": "Vanilla PINN",
+                        "h": "H-PINN",
+                        "ho": "HO-PINN",
+                    }[balance_mode]
                     config_id = configuration_id(
                         balance_mode, model_config, train_config
                     )
@@ -383,7 +387,11 @@ def parse_args() -> argparse.Namespace:
         "--budgets", default=",".join(str(value) for value in LABEL_BUDGETS)
     )
     parser.add_argument("--seeds", default="101,102,103,104,105,106,107,108,109,110")
-    parser.add_argument("--balancers", default="h,ho")
+    parser.add_argument(
+        "--balancers",
+        default="h,ho",
+        help="Comma-separated PINN loss modes: vanilla, h, and/or ho.",
+    )
     parser.add_argument("--time-fraction", type=float, default=0.7)
     parser.add_argument("--time-bins", type=int, default=10)
     parser.add_argument("--interpolation-size", type=int, default=1500)
@@ -481,8 +489,8 @@ def main() -> None:
         raise ValueError(f"Budgets must be selected from {LABEL_BUDGETS}")
     if args.result_suffix and not re.fullmatch(r"[A-Za-z0-9_-]+", args.result_suffix):
         raise ValueError("result suffix may contain only letters, digits, '_' and '-'")
-    if any(value not in {"h", "ho"} for value in balancers):
-        raise ValueError("Balancers must be h and/or ho")
+    if any(value not in {"vanilla", "h", "ho"} for value in balancers):
+        raise ValueError("Balancers must be selected from vanilla,h,ho")
     if not classical_methods or any(
         value not in {"XGB", "SVM", "GP"} for value in classical_methods
     ):

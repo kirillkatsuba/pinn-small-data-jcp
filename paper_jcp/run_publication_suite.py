@@ -41,7 +41,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--balancers",
         default=DEFAULT_BALANCERS,
-        help="Comma-separated PINN loss balancers: h, ho, or h,ho.",
+        help="Comma-separated PINN loss modes selected from vanilla,h,ho.",
     )
     parser.add_argument(
         "--classical-tuning-profile",

@@ -1,9 +1,9 @@
 """Core components for the unified JCP small-data protocol.
 
 This module deliberately does not execute experiments.  It provides the
-normalised common PINN backbone, H/HO loss balancing, nested labelled designs,
-time interpolation/extrapolation splits, and per-epoch residual resampling used
-by :mod:`paper_jcp.run_unified_protocol`.
+normalised common PINN backbone, vanilla/H/HO loss balancing, nested labelled
+designs, time interpolation/extrapolation splits, and per-epoch residual
+resampling used by :mod:`paper_jcp.run_unified_protocol`.
 """
 
 from __future__ import annotations
@@ -1157,9 +1157,37 @@ def loss_components(
     )
 
 
-def make_balancer(mode: str, config: TrainConfig) -> HierarchicalOrthogonalPINNLossBalancer:
+class VanillaPINNLossBalancer:
+    """Equal, fixed weights for the data, IBC, and PDE loss components."""
+
+    @staticmethod
+    def compute_weights(
+        model: nn.Module,
+        loss_mse: torch.Tensor,
+        loss_ibc: torch.Tensor,
+        loss_pde: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, dict[str, float]]:
+        del model, loss_ibc, loss_pde
+        weight = loss_mse.detach().new_tensor(1.0 / 3.0)
+        diagnostics = {
+            "a_mse": 1.0,
+            "a_ibc": 1.0,
+            "a_pde": 1.0,
+            "w_mse": 1.0 / 3.0,
+            "w_ibc": 1.0 / 3.0,
+            "w_pde": 1.0 / 3.0,
+        }
+        return weight, weight.clone(), weight.clone(), diagnostics
+
+
+def make_balancer(
+    mode: str,
+    config: TrainConfig,
+) -> VanillaPINNLossBalancer | HierarchicalOrthogonalPINNLossBalancer:
+    if mode == "vanilla":
+        return VanillaPINNLossBalancer()
     if mode not in {"h", "ho"}:
-        raise ValueError("balancer must be 'h' or 'ho'")
+        raise ValueError("balancer must be 'vanilla', 'h', or 'ho'")
     return HierarchicalOrthogonalPINNLossBalancer(
         L0_mse=config.l0_data,
         L0_ibc=config.l0_ibc,
