@@ -1460,6 +1460,7 @@ def configuration_id(
     model_config: ModelConfig,
     train_config: TrainConfig,
 ) -> str:
+    mode_id = "vanilla-unit" if balance_mode == "vanilla" else balance_mode
     suffix = ""
     if train_config.epochs != 10_000:
         suffix += f"_e{train_config.epochs}"
@@ -1468,7 +1469,7 @@ def configuration_id(
     if not train_config.deterministic:
         suffix += "_nondeterministic"
     return (
-        f"{balance_mode}_w{model_config.hidden_dim}_d{model_config.depth}_"
+        f"{mode_id}_w{model_config.hidden_dim}_d{model_config.depth}_"
         f"{model_config.activation}_lr{train_config.learning_rate:g}_"
         f"l0d{train_config.l0_data:g}_l0b{train_config.l0_ibc:g}_"
         f"{train_config.optimizer}_{train_config.scheduler}_"

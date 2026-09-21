@@ -44,7 +44,7 @@ class VanillaPINNTests(unittest.TestCase):
     def test_vanilla_has_a_distinct_configuration_identity(self) -> None:
         vanilla = configuration_id("vanilla", ModelConfig(), TrainConfig())
         hierarchical = configuration_id("h", ModelConfig(), TrainConfig())
-        self.assertTrue(vanilla.startswith("vanilla_"))
+        self.assertTrue(vanilla.startswith("vanilla-unit_"))
         self.assertNotEqual(vanilla, hierarchical)
 
     def test_publication_runner_propagates_vanilla_mode(self) -> None:
