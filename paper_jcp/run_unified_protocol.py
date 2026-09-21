@@ -425,6 +425,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-learning-rate", type=float, default=1e-5)
     parser.add_argument("--optimizer", choices=("adam", "adamw"), default="adam")
     parser.add_argument("--scheduler", choices=("cosine", "none"), default="cosine")
+    parser.add_argument(
+        "--scheduler-epochs",
+        type=int,
+        default=None,
+        help=(
+            "Cosine-scheduler horizon. Defaults to --epochs. Set 50000 for a "
+            "10k run that reproduces the first 10k steps of the 50k protocol."
+        ),
+    )
     parser.add_argument("--l0-data", type=float, default=1e-2)
     parser.add_argument("--l0-ibc", type=float, default=1e-3)
     parser.add_argument("--orthogonal-floor", type=float, default=0.5)
@@ -435,6 +444,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--gradient-clip", type=float, default=1.0)
     parser.add_argument(
         "--checkpoint-criterion", choices=("balanced", "raw"), default="balanced"
+    )
+    parser.add_argument(
+        "--checkpoint-epochs",
+        default="",
+        help=(
+            "Comma-separated epochs at which portable periodic checkpoints are "
+            "saved in addition to the best checkpoint."
+        ),
     )
     parser.add_argument("--log-every", type=int, default=100)
     parser.add_argument("--physics-validation-size", type=int, default=512)
@@ -483,6 +500,7 @@ def main() -> None:
     args = parse_args()
     budgets = comma_ints(args.budgets)
     seeds = comma_ints(args.seeds)
+    checkpoint_epochs = comma_ints(args.checkpoint_epochs)
     balancers = comma_strings(args.balancers)
     classical_methods = tuple(value.upper() for value in comma_strings(args.classical_methods))
     if any(value not in LABEL_BUDGETS for value in budgets):
@@ -491,6 +509,14 @@ def main() -> None:
         raise ValueError("result suffix may contain only letters, digits, '_' and '-'")
     if any(value not in {"vanilla", "h", "ho"} for value in balancers):
         raise ValueError("Balancers must be selected from vanilla,h,ho")
+    if len(set(checkpoint_epochs)) != len(checkpoint_epochs):
+        raise ValueError("checkpoint epochs must be unique")
+    if any(value < 1 or value > args.epochs for value in checkpoint_epochs):
+        raise ValueError(
+            f"checkpoint epochs must lie between 1 and {args.epochs}"
+        )
+    if args.scheduler_epochs is not None and args.scheduler_epochs < args.epochs:
+        raise ValueError("scheduler epochs must be at least the training epochs")
     if not classical_methods or any(
         value not in {"XGB", "SVM", "GP"} for value in classical_methods
     ):
@@ -528,6 +554,7 @@ def main() -> None:
         min_learning_rate=args.min_learning_rate,
         optimizer=args.optimizer,
         scheduler=args.scheduler,
+        scheduler_epochs=args.scheduler_epochs,
         l0_data=args.l0_data,
         l0_ibc=args.l0_ibc,
         orthogonal_floor=args.orthogonal_floor,
@@ -535,6 +562,7 @@ def main() -> None:
         residual_domain=args.residual_domain,
         gradient_clip=args.gradient_clip,
         checkpoint_criterion=args.checkpoint_criterion,
+        checkpoint_epochs=checkpoint_epochs,
         log_every=args.log_every,
         physics_validation_size=args.physics_validation_size,
         device="cpu" if resolved_device is None else str(resolved_device),

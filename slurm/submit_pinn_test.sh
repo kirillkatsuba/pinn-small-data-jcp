@@ -6,6 +6,9 @@ JCP_CONDA_ENV="${JCP_CONDA_ENV:-pinn-small-data-jcp}"
 JCP_MODELS_PER_GPU="${JCP_MODELS_PER_GPU:-4}"
 JCP_EPOCHS="${JCP_EPOCHS:-50000}"
 JCP_PINN_BALANCERS="${JCP_PINN_BALANCERS:-h,ho}"
+JCP_CHECKPOINT_EPOCHS="${JCP_CHECKPOINT_EPOCHS:-}"
+JCP_EXPERIMENT_TAG="${JCP_EXPERIMENT_TAG:-}"
+JCP_SCHEDULER_EPOCHS="${JCP_SCHEDULER_EPOCHS:-}"
 TEST_NAME="${1:-${JCP_TEST:-}}"
 
 case "${TEST_NAME}" in
@@ -36,7 +39,7 @@ if [[ -n "${JCP_PINN_TIME:-}" ]]; then
   gpu_args+=("--time=${JCP_PINN_TIME}")
 fi
 
-export_values="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_TEST=${TEST_NAME},JCP_MODELS_PER_GPU=${JCP_MODELS_PER_GPU},JCP_EPOCHS=${JCP_EPOCHS},JCP_PINN_BALANCERS=${JCP_PINN_BALANCERS}"
+export_values="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_TEST=${TEST_NAME},JCP_MODELS_PER_GPU=${JCP_MODELS_PER_GPU},JCP_EPOCHS=${JCP_EPOCHS},JCP_PINN_BALANCERS=${JCP_PINN_BALANCERS},JCP_CHECKPOINT_EPOCHS=${JCP_CHECKPOINT_EPOCHS},JCP_EXPERIMENT_TAG=${JCP_EXPERIMENT_TAG},JCP_SCHEDULER_EPOCHS=${JCP_SCHEDULER_EPOCHS}"
 
 pinn_submission=$(sbatch --parsable "${common_args[@]}" "${gpu_args[@]}" \
   --job-name="jcp-${TEST_NAME}-pinn" \
@@ -46,7 +49,7 @@ pinn_job="${pinn_submission%%;*}"
 merge_submission=$(sbatch --parsable "${common_args[@]}" "${cpu_args[@]}" \
   --job-name="jcp-${TEST_NAME}-merge" \
   --dependency="afterok:${pinn_job}" \
-  --export="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_TEST=${TEST_NAME}" \
+  --export="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_TEST=${TEST_NAME},JCP_EXPERIMENT_TAG=${JCP_EXPERIMENT_TAG}" \
   slurm/merge_pinn_test.sbatch)
 merge_job="${merge_submission%%;*}"
 

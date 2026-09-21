@@ -57,6 +57,9 @@ fi
 SEED="${SEEDS[${SLURM_ARRAY_TASK_ID}]}"
 EPOCHS="${JCP_EPOCHS:-50000}"
 MODELS_PER_GPU="${JCP_MODELS_PER_GPU:-4}"
+CHECKPOINT_EPOCHS="${JCP_CHECKPOINT_EPOCHS:-}"
+EXPERIMENT_TAG="${JCP_EXPERIMENT_TAG:-}"
+SCHEDULER_EPOCHS="${JCP_SCHEDULER_EPOCHS:-}"
 
 if ! [[ "${EPOCHS}" =~ ^[1-9][0-9]*$ ]]; then
   echo "JCP_EPOCHS must be a positive integer, got: ${EPOCHS}" >&2
@@ -64,6 +67,14 @@ if ! [[ "${EPOCHS}" =~ ^[1-9][0-9]*$ ]]; then
 fi
 if ! [[ "${MODELS_PER_GPU}" =~ ^[1-9][0-9]*$ ]] || (( MODELS_PER_GPU > 12 )); then
   echo "JCP_MODELS_PER_GPU must be an integer from 1 to 12, got: ${MODELS_PER_GPU}" >&2
+  exit 2
+fi
+if [[ -n "${EXPERIMENT_TAG}" ]] && ! [[ "${EXPERIMENT_TAG}" =~ ^[A-Za-z0-9_-]+$ ]]; then
+  echo "JCP_EXPERIMENT_TAG may contain only letters, digits, '_' and '-'" >&2
+  exit 2
+fi
+if [[ -n "${SCHEDULER_EPOCHS}" ]] && ! [[ "${SCHEDULER_EPOCHS}" =~ ^[1-9][0-9]*$ ]]; then
+  echo "JCP_SCHEDULER_EPOCHS must be a positive integer" >&2
   exit 2
 fi
 
@@ -74,10 +85,22 @@ if not torch.cuda.is_available():
 print(f"PyTorch={torch.__version__}; CUDA={torch.version.cuda}; GPU={torch.cuda.get_device_name(0)}")
 PY
 
-MODEL_LOG_DIR="slurm/logs/${TEST_NAME}-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+TAG_PART="${EXPERIMENT_TAG:+-${EXPERIMENT_TAG}}"
+MODEL_LOG_DIR="slurm/logs/${TEST_NAME}${TAG_PART}-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 mkdir -p "${MODEL_LOG_DIR}"
 
-echo "${TEST_NAME}; seed=${SEED}; epochs=${EPOCHS}; modes=${BALANCER_SPEC}; parallel models/GPU=${MODELS_PER_GPU}"
+echo "${TEST_NAME}; seed=${SEED}; epochs=${EPOCHS}; scheduler_epochs=${SCHEDULER_EPOCHS:-${EPOCHS}}; modes=${BALANCER_SPEC}; snapshots=${CHECKPOINT_EPOCHS:-none}; tag=${EXPERIMENT_TAG:-main}; parallel models/GPU=${MODELS_PER_GPU}"
+
+EXTRA_ARGS=()
+if [[ -n "${CHECKPOINT_EPOCHS}" ]]; then
+  EXTRA_ARGS+=("--checkpoint-epochs" "${CHECKPOINT_EPOCHS}")
+fi
+if [[ -n "${EXPERIMENT_TAG}" ]]; then
+  EXTRA_ARGS+=("--experiment-tag" "${EXPERIMENT_TAG}")
+fi
+if [[ -n "${SCHEDULER_EPOCHS}" ]]; then
+  EXTRA_ARGS+=("--scheduler-epochs" "${SCHEDULER_EPOCHS}")
+fi
 
 pids=()
 labels=()
@@ -111,6 +134,7 @@ for budget in "${BUDGETS[@]}"; do
       --epochs "${EPOCHS}" \
       --result-suffix "seed${SEED}_${label}" \
       --workers 1 \
+      "${EXTRA_ARGS[@]}" \
       >"${MODEL_LOG_DIR}/${label}.log" 2>&1 &
     pids+=("$!")
     labels+=("${label}")

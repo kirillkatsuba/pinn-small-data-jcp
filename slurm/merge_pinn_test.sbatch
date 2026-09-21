@@ -16,7 +16,14 @@ source slurm/activate_conda.sh
 export PYTHONUNBUFFERED=1
 
 TEST_NAME="${JCP_TEST:?JCP_TEST must be test1, test2, test3, or test4}"
+EXPERIMENT_TAG="${JCP_EXPERIMENT_TAG:-}"
+
+EXTRA_ARGS=()
+if [[ -n "${EXPERIMENT_TAG}" ]]; then
+  EXTRA_ARGS+=("--experiment-tag" "${EXPERIMENT_TAG}")
+fi
 
 python3 -B paper_jcp/merge_publication_shards.py \
   --test "${TEST_NAME}" \
-  --part pinn
+  --part pinn \
+  "${EXTRA_ARGS[@]}"

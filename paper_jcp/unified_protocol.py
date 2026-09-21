@@ -76,6 +76,7 @@ class TrainConfig:
     min_learning_rate: float = 1e-5
     optimizer: str = "adam"
     scheduler: str = "cosine"
+    scheduler_epochs: int | None = None
     l0_data: float = 1e-2
     l0_ibc: float = 1e-3
     orthogonal_floor: float = 0.5
@@ -83,6 +84,7 @@ class TrainConfig:
     residual_domain: str = "full"
     gradient_clip: float = 1.0
     checkpoint_criterion: str = "balanced"
+    checkpoint_epochs: tuple[int, ...] = ()
     log_every: int = 100
     physics_validation_size: int = 512
     device: str = "cpu"
@@ -1212,7 +1214,9 @@ def _scheduler(
         return None
     if config.scheduler == "cosine":
         return torch.optim.lr_scheduler.CosineAnnealingLR(
-            optimizer, T_max=config.epochs, eta_min=config.min_learning_rate
+            optimizer,
+            T_max=(config.scheduler_epochs or config.epochs),
+            eta_min=config.min_learning_rate,
         )
     raise ValueError(f"Unsupported scheduler: {config.scheduler}")
 
@@ -1264,7 +1268,10 @@ def train_pinn(
         else torch.as_tensor(validation_perm_np, dtype=torch.float32, device=device)
     )
     best_value = float("inf")
+    best_epoch = 0
     best_state: dict[str, torch.Tensor] | None = None
+    snapshot_epochs = set(train_config.checkpoint_epochs)
+    snapshot_paths: list[str] = []
     history: list[dict] = []
     started = time.perf_counter()
 
@@ -1306,7 +1313,46 @@ def train_pinn(
         value = float(criterion.detach())
         if value < best_value:
             best_value = value
+            best_epoch = epoch + 1
             best_state = copy.deepcopy(model.state_dict())
+
+        current_epoch = epoch + 1
+        if current_epoch in snapshot_epochs:
+            portable_snapshot = {
+                name: tensor.detach().cpu().clone()
+                for name, tensor in model.state_dict().items()
+            }
+            snapshot_path = checkpoint_path.with_name(
+                f"{checkpoint_path.stem}.epoch{current_epoch:06d}"
+                f"{checkpoint_path.suffix}"
+            )
+            snapshot_path.parent.mkdir(parents=True, exist_ok=True)
+            torch.save(
+                {
+                    "state_dict": portable_snapshot,
+                    "test_name": bundle.test_name,
+                    "data_source": bundle.data_source,
+                    "dataset_path": bundle.dataset_path,
+                    "input_lower": bundle.input_lower,
+                    "input_upper": bundle.input_upper,
+                    "porosity": bundle.porosity_value,
+                    "water_viscosity": bundle.water_viscosity,
+                    "oil_viscosity": bundle.oil_viscosity,
+                    "balance_mode": balance_mode,
+                    "label_budget": label_budget,
+                    "seed": seed,
+                    "model_config": asdict(model_config),
+                    "train_config": asdict(train_config),
+                    "resolved_device": str(device),
+                    "checkpoint_kind": "periodic",
+                    "epoch": current_epoch,
+                    "criterion_value": value,
+                    "best_value_so_far": best_value,
+                    "best_epoch_so_far": best_epoch,
+                },
+                snapshot_path,
+            )
+            snapshot_paths.append(str(snapshot_path))
 
         should_log = epoch == 0 or (epoch + 1) % train_config.log_every == 0
         if should_log or epoch + 1 == train_config.epochs:
@@ -1377,6 +1423,9 @@ def train_pinn(
             "model_config": asdict(model_config),
             "train_config": asdict(train_config),
             "resolved_device": str(device),
+            "checkpoint_kind": "best",
+            "epoch": best_epoch,
+            "best_epoch": best_epoch,
             "best_value": best_value,
         },
         checkpoint_path,
@@ -1389,6 +1438,9 @@ def train_pinn(
             {
                 "checkpoint": str(checkpoint_path),
                 "elapsed_seconds": elapsed,
+                "best_epoch": best_epoch,
+                "best_value": best_value,
+                "periodic_checkpoints": snapshot_paths,
                 "data_source": bundle.data_source,
                 "dataset_path": bundle.dataset_path,
                 "input_lower": bundle.input_lower,
@@ -1464,6 +1516,11 @@ def configuration_id(
     suffix = ""
     if train_config.epochs != 10_000:
         suffix += f"_e{train_config.epochs}"
+    if (
+        train_config.scheduler_epochs is not None
+        and train_config.scheduler_epochs != train_config.epochs
+    ):
+        suffix += f"_sched{train_config.scheduler_epochs}"
     if train_config.device != "cpu":
         suffix += f"_{train_config.device.replace(':', '-')}"
     if not train_config.deterministic:

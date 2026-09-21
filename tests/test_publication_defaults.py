@@ -71,6 +71,32 @@ class PublicationDefaultTests(unittest.TestCase):
         self.assertIn("--budgets 20", rendered)
         self.assertIn("--balancers h", rendered)
 
+    def test_publication_command_isolates_checkpoint_study(self) -> None:
+        invocation = command(
+            "test3",
+            "pinn",
+            1,
+            "cuda:0",
+            True,
+            Path("data"),
+            "101",
+            10_000,
+            "seed101_n20_vanilla",
+            budgets="20",
+            balancers="vanilla",
+            checkpoint_epochs="1000,2500,5000,7500,10000",
+            experiment_tag="convergence10k",
+            scheduler_epochs=50_000,
+        )
+        rendered = " ".join(str(item) for item in invocation)
+        self.assertIn(
+            "--experiment-name corrected_test3_final_convergence10k", rendered
+        )
+        self.assertIn(
+            "--checkpoint-epochs 1000,2500,5000,7500,10000", rendered
+        )
+        self.assertIn("--scheduler-epochs 50000", rendered)
+
     def test_seed_shards_merge_into_canonical_table(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             generated = Path(directory)

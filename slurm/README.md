@@ -171,6 +171,27 @@ the new `Vanilla PINN` rows. The configuration identifier starts with
 `vanilla-unit`, so earlier experimental variants cannot be treated as complete
 unit-weight runs.
 
+For the isolated 10,000-epoch convergence study, save portable snapshots at
+five milestones while retaining the 50,000-epoch cosine schedule used by the
+main protocol:
+
+```bash
+JCP_EPOCHS=10000 \
+JCP_SCHEDULER_EPOCHS=50000 \
+JCP_CHECKPOINT_EPOCHS=1000,2500,5000,7500,10000 \
+JCP_EXPERIMENT_TAG=convergence10k \
+JCP_PINN_BALANCERS=vanilla,h,ho \
+JCP_MODELS_PER_GPU=4 \
+JCP_PINN_TIME=04:00:00 \
+bash slurm/submit_pinn_test.sh test3
+```
+
+The experiment tag places metrics, histories, and checkpoints in separate
+`*_convergence10k` directories, so they cannot be merged into the main
+50,000-epoch results. The ordinary per-run `.pth` is the best checkpoint and
+records `best_epoch`; milestone files use names such as
+`*.epoch001000.pth` and `*.epoch010000.pth`.
+
 Start with four concurrent models. Increase to eight only if `nvidia-smi` shows
 substantial free memory and the elapsed time per model does not increase too
 much. Per-model logs are stored under

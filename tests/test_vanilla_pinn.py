@@ -83,6 +83,7 @@ class VanillaPINNTests(unittest.TestCase):
                 model_config=ModelConfig(hidden_dim=8, depth=1, activation="gelu"),
                 train_config=TrainConfig(
                     epochs=2,
+                    checkpoint_epochs=(1, 2),
                     learning_rate=1e-3,
                     collocation_ratio=0.1,
                     log_every=1,
@@ -109,12 +110,28 @@ class VanillaPINNTests(unittest.TestCase):
                 root / "checkpoint.pth", map_location="cpu", weights_only=False
             )
             self.assertEqual(payload["balance_mode"], "vanilla")
+            self.assertEqual(payload["checkpoint_kind"], "best")
+            self.assertIn(payload["best_epoch"], {1, 2})
             self.assertTrue(
                 all(
                     value.device.type == "cpu"
                     for value in payload["state_dict"].values()
                 )
             )
+            for epoch in (1, 2):
+                snapshot = root / f"checkpoint.epoch{epoch:06d}.pth"
+                self.assertTrue(snapshot.exists())
+                snapshot_payload = torch.load(
+                    snapshot, map_location="cpu", weights_only=False
+                )
+                self.assertEqual(snapshot_payload["checkpoint_kind"], "periodic")
+                self.assertEqual(snapshot_payload["epoch"], epoch)
+                self.assertTrue(
+                    all(
+                        value.device.type == "cpu"
+                        for value in snapshot_payload["state_dict"].values()
+                    )
+                )
 
 
 if __name__ == "__main__":

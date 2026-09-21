@@ -101,7 +101,17 @@ def main() -> None:
         choices=("random", "time"),
         default="time",
     )
+    parser.add_argument(
+        "--experiment-tag",
+        default="",
+        help="Optional experiment suffix used by run_publication_suite.py.",
+    )
     args = parser.parse_args()
+    if args.experiment_tag and not all(
+        character.isalnum() or character in "_-"
+        for character in args.experiment_tag
+    ):
+        raise ValueError("experiment tag may contain only letters, digits, '_' and '-'")
     seeds = parse_seeds(args.seeds)
     if not seeds:
         raise ValueError("At least one seed is required")
@@ -113,12 +123,25 @@ def main() -> None:
     experiments: list[tuple[str, str, str]] = []
     if args.part in {"all", "pinn"}:
         experiments.extend(
-            (PINN_EXPERIMENTS[test], test, "pinn") for test in selected_tests
+            (
+                (
+                    f"{PINN_EXPERIMENTS[test]}_{args.experiment_tag}"
+                    if args.experiment_tag
+                    else PINN_EXPERIMENTS[test]
+                ),
+                test,
+                "pinn",
+            )
+            for test in selected_tests
         )
     if args.part in {"all", "classical"}:
         experiments.extend(
             (
-                f"{test}_classical_{args.classical_tuning_profile}_{args.classical_cv}",
+                (
+                    f"{test}_classical_{args.classical_tuning_profile}_{args.classical_cv}_{args.experiment_tag}"
+                    if args.experiment_tag
+                    else f"{test}_classical_{args.classical_tuning_profile}_{args.classical_cv}"
+                ),
                 test,
                 "classical",
             )

@@ -34,6 +34,22 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--seeds", default=DEFAULT_SEEDS)
     parser.add_argument("--epochs", type=int, default=DEFAULT_EPOCHS)
     parser.add_argument(
+        "--scheduler-epochs",
+        type=int,
+        default=None,
+        help="Optional cosine-scheduler horizon independent of the stop epoch.",
+    )
+    parser.add_argument(
+        "--checkpoint-epochs",
+        default="",
+        help="Comma-separated periodic checkpoint epochs for PINN runs.",
+    )
+    parser.add_argument(
+        "--experiment-tag",
+        default="",
+        help="Optional suffix that isolates outputs from the main publication runs.",
+    )
+    parser.add_argument(
         "--budgets",
         default=DEFAULT_BUDGETS,
         help="Comma-separated label budgets selected from 20,50,100,200,500,1000.",
@@ -96,8 +112,10 @@ def pinn_configuration(
     deterministic: bool,
     epochs: int,
     balancers: str,
+    checkpoint_epochs: str = "",
+    scheduler_epochs: int | None = None,
 ) -> list[str]:
-    return [
+    result = [
         "--hidden-dim", "128",
         "--depth", "6",
         "--activation", "gelu",
@@ -119,6 +137,11 @@ def pinn_configuration(
         "--deterministic" if deterministic else "--no-deterministic",
         "--workers", str(workers),
     ]
+    if checkpoint_epochs:
+        result.extend(("--checkpoint-epochs", checkpoint_epochs))
+    if scheduler_epochs is not None:
+        result.extend(("--scheduler-epochs", str(scheduler_epochs)))
+    return result
 
 
 def corrected_data(test: str, data_root: Path) -> list[str]:
@@ -138,12 +161,15 @@ def experiment_name(
     part: str,
     classical_profile: str = "strong",
     classical_cv: str = "time",
+    experiment_tag: str = "",
 ) -> str:
     if part == "classical":
-        return f"{test}_classical_{classical_profile}_{classical_cv}"
-    if test == "test1":
-        return "test1_corrected_candidate"
-    return f"corrected_{test}_final"
+        base = f"{test}_classical_{classical_profile}_{classical_cv}"
+    elif test == "test1":
+        base = "test1_corrected_candidate"
+    else:
+        base = f"corrected_{test}_final"
+    return f"{base}_{experiment_tag}" if experiment_tag else base
 
 
 def command(
@@ -161,13 +187,16 @@ def command(
     balancers: str = DEFAULT_BALANCERS,
     classical_profile: str = "strong",
     classical_cv: str = "time",
+    checkpoint_epochs: str = "",
+    experiment_tag: str = "",
+    scheduler_epochs: int | None = None,
 ) -> list[str]:
     result = [
         sys.executable,
         "-B",
         str(RUNNER),
         "--experiment-name", experiment_name(
-            test, part, classical_profile, classical_cv
+            test, part, classical_profile, classical_cv, experiment_tag
         ),
         "--test", test,
         *corrected_data(test, data_root),
@@ -179,7 +208,13 @@ def command(
         result.extend(
             (
                 *pinn_configuration(
-                    workers, device, deterministic, epochs, balancers
+                    workers,
+                    device,
+                    deterministic,
+                    epochs,
+                    balancers,
+                    checkpoint_epochs,
+                    scheduler_epochs,
                 ),
                 "--skip-classical",
             )
@@ -214,6 +249,9 @@ def commands_for(
     classical_profile: str,
     classical_cv: str,
     classical_methods: str,
+    checkpoint_epochs: str = "",
+    experiment_tag: str = "",
+    scheduler_epochs: int | None = None,
 ) -> list[list[str]]:
     commands: list[list[str]] = []
     if part in {"pinn", "all"}:
@@ -222,6 +260,9 @@ def commands_for(
                 test, "pinn", workers, device, deterministic, data_root,
                 seeds, epochs, result_suffix, budgets=budgets,
                 balancers=balancers,
+                checkpoint_epochs=checkpoint_epochs,
+                experiment_tag=experiment_tag,
+                scheduler_epochs=scheduler_epochs,
             )
         )
     if part in {"classical", "all"}:
@@ -237,6 +278,8 @@ def commands_for(
                     seeds, epochs, result_suffix, budgets=budgets,
                     balancers=balancers, classical_profile=classical_profile,
                     classical_cv=classical_cv,
+                    experiment_tag=experiment_tag,
+                    scheduler_epochs=scheduler_epochs,
                     methods=",".join(selected_methods),
                 )
             )
@@ -249,6 +292,8 @@ def commands_for(
                         test, "classical", workers, device, deterministic, data_root,
                         seeds, epochs, result_suffix, ",".join(non_gp), budgets,
                         balancers, classical_profile, classical_cv,
+                        checkpoint_epochs, experiment_tag,
+                        scheduler_epochs,
                     )
                 )
             if "GP" in selected_methods:
@@ -257,6 +302,8 @@ def commands_for(
                         test, "classical", workers, device, deterministic, data_root,
                         seeds, epochs, result_suffix, "GP", budgets, balancers,
                         classical_profile, classical_cv,
+                        checkpoint_epochs, experiment_tag,
+                        scheduler_epochs,
                     )
                 )
     return commands
@@ -270,6 +317,11 @@ def main() -> None:
         raise ValueError("budgets must not be empty")
     if not args.balancers.strip():
         raise ValueError("balancers must not be empty")
+    if args.experiment_tag and not all(
+        character.isalnum() or character in "_-"
+        for character in args.experiment_tag
+    ):
+        raise ValueError("experiment tag may contain only letters, digits, '_' and '-'")
     classical_methods = tuple(
         value.strip().upper()
         for value in args.classical_methods.split(",")
@@ -296,6 +348,9 @@ def main() -> None:
             args.classical_tuning_profile,
             args.classical_cv,
             ",".join(classical_methods),
+            args.checkpoint_epochs,
+            args.experiment_tag,
+            args.scheduler_epochs,
         ):
             print(f"\n$ {shlex.join(invocation)}", flush=True)
             if not args.dry_run:
