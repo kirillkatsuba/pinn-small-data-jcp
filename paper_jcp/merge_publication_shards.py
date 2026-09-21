@@ -34,6 +34,7 @@ def parse_seeds(value: str) -> tuple[int, ...]:
 
 def merge_experiment(directory: str, test: str, seeds: tuple[int, ...]) -> Path:
     experiment_dir = GENERATED / directory
+    output = experiment_dir / f"unified_{test}.csv"
     shards: list[Path] = []
     missing: list[str] = []
     for seed in seeds:
@@ -51,7 +52,10 @@ def merge_experiment(directory: str, test: str, seeds: tuple[int, ...]) -> Path:
         formatted = "\n".join(missing)
         raise FileNotFoundError(f"Missing result shards:\n{formatted}")
 
-    tables = [pd.read_csv(path) for path in shards]
+    tables = []
+    if output.exists():
+        tables.append(pd.read_csv(output))
+    tables.extend(pd.read_csv(path) for path in shards)
     merged = pd.concat(tables, ignore_index=True)
     identity = [column for column in IDENTITY_COLUMNS if column in merged.columns]
     merged = merged.drop_duplicates(subset=identity, keep="last")
@@ -62,7 +66,6 @@ def merge_experiment(directory: str, test: str, seeds: tuple[int, ...]) -> Path:
     ]
     merged = merged.sort_values(order, kind="stable").reset_index(drop=True)
 
-    output = experiment_dir / f"unified_{test}.csv"
     temporary = output.with_suffix(".csv.tmp")
     merged.to_csv(temporary, index=False)
     temporary.replace(output)

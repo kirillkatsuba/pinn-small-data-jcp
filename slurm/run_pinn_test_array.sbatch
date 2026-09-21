@@ -23,7 +23,8 @@ export MKL_NUM_THREADS=1
 
 SEEDS=(101 102 103 104 105 106 107 108 109 110)
 BUDGETS=(20 50 100 200 500 1000)
-BALANCERS=(h ho)
+BALANCER_SPEC="${JCP_PINN_BALANCERS:-h,ho}"
+IFS=',' read -r -a BALANCERS <<< "${BALANCER_SPEC}"
 TEST_NAME="${JCP_TEST:?JCP_TEST must be test1, test2, test3, or test4}"
 
 case "${TEST_NAME}" in
@@ -33,6 +34,20 @@ case "${TEST_NAME}" in
     exit 2
     ;;
 esac
+
+if (( ${#BALANCERS[@]} == 0 )); then
+  echo "JCP_PINN_BALANCERS must select vanilla, h, and/or ho" >&2
+  exit 2
+fi
+for balancer in "${BALANCERS[@]}"; do
+  case "${balancer}" in
+    vanilla|h|ho) ;;
+    *)
+      echo "Unsupported balancer '${balancer}'; use vanilla, h, and/or ho" >&2
+      exit 2
+      ;;
+  esac
+done
 
 if (( SLURM_ARRAY_TASK_ID < 0 || SLURM_ARRAY_TASK_ID >= ${#SEEDS[@]} )); then
   echo "Invalid array index: ${SLURM_ARRAY_TASK_ID}" >&2
@@ -62,7 +77,7 @@ PY
 MODEL_LOG_DIR="slurm/logs/${TEST_NAME}-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 mkdir -p "${MODEL_LOG_DIR}"
 
-echo "${TEST_NAME}; seed=${SEED}; epochs=${EPOCHS}; parallel models/GPU=${MODELS_PER_GPU}"
+echo "${TEST_NAME}; seed=${SEED}; epochs=${EPOCHS}; modes=${BALANCER_SPEC}; parallel models/GPU=${MODELS_PER_GPU}"
 
 pids=()
 labels=()

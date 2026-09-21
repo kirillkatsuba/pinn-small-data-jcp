@@ -5,6 +5,7 @@ PROJECT_DIR="${PROJECT_DIR:-$(pwd)}"
 JCP_CONDA_ENV="${JCP_CONDA_ENV:-pinn-small-data-jcp}"
 JCP_MODELS_PER_GPU="${JCP_MODELS_PER_GPU:-4}"
 JCP_EPOCHS="${JCP_EPOCHS:-50000}"
+JCP_PINN_BALANCERS="${JCP_PINN_BALANCERS:-h,ho}"
 TEST_NAME="${1:-${JCP_TEST:-}}"
 
 case "${TEST_NAME}" in
@@ -35,7 +36,7 @@ if [[ -n "${JCP_PINN_TIME:-}" ]]; then
   gpu_args+=("--time=${JCP_PINN_TIME}")
 fi
 
-export_values="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_TEST=${TEST_NAME},JCP_MODELS_PER_GPU=${JCP_MODELS_PER_GPU},JCP_EPOCHS=${JCP_EPOCHS}"
+export_values="ALL,PROJECT_DIR=${PROJECT_DIR},JCP_CONDA_ENV=${JCP_CONDA_ENV},JCP_TEST=${TEST_NAME},JCP_MODELS_PER_GPU=${JCP_MODELS_PER_GPU},JCP_EPOCHS=${JCP_EPOCHS},JCP_PINN_BALANCERS=${JCP_PINN_BALANCERS}"
 
 pinn_submission=$(sbatch --parsable "${common_args[@]}" "${gpu_args[@]}" \
   --job-name="jcp-${TEST_NAME}-pinn" \

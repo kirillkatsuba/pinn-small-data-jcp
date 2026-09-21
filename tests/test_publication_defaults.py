@@ -117,6 +117,39 @@ class PublicationDefaultTests(unittest.TestCase):
             merged = pd.read_csv(output)
             self.assertEqual(set(merged["n_train"]), {20, 50})
 
+    def test_merging_new_shards_preserves_existing_methods(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            generated = Path(directory)
+            experiment = generated / "example"
+            experiment.mkdir()
+            pd.DataFrame(
+                {
+                    "test_name": ["test2"],
+                    "seed": [101],
+                    "n_train": [20],
+                    "method": ["H-PINN"],
+                    "config_id": ["h_candidate"],
+                    "evaluation_region": ["interpolation"],
+                }
+            ).to_csv(experiment / "unified_test2.csv", index=False)
+            pd.DataFrame(
+                {
+                    "test_name": ["test2"],
+                    "seed": [101],
+                    "n_train": [20],
+                    "method": ["Vanilla PINN"],
+                    "config_id": ["vanilla-unit_candidate"],
+                    "evaluation_region": ["interpolation"],
+                }
+            ).to_csv(
+                experiment / "unified_test2_seed101_n20_vanilla.csv",
+                index=False,
+            )
+            with patch("paper_jcp.merge_publication_shards.GENERATED", generated):
+                output = merge_experiment("example", "test2", (101,))
+            merged = pd.read_csv(output)
+            self.assertEqual(set(merged["method"]), {"H-PINN", "Vanilla PINN"})
+
 
 if __name__ == "__main__":
     unittest.main()

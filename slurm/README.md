@@ -156,6 +156,21 @@ JCP_PINN_TIME=12:00:00 \
 bash slurm/submit_pinn_test.sh test3
 ```
 
+Select only the unit-weight Vanilla PINN while retaining the same architecture,
+optimizer, residual sampling, budgets, seeds, and 50,000-epoch protocol:
+
+```bash
+JCP_PINN_BALANCERS=vanilla \
+JCP_MODELS_PER_GPU=4 \
+JCP_PINN_TIME=12:00:00 \
+bash slurm/submit_pinn_test.sh test3
+```
+
+The dependent merge preserves an existing canonical result table and appends
+the new `Vanilla PINN` rows. The configuration identifier starts with
+`vanilla-unit`, so earlier experimental variants cannot be treated as complete
+unit-weight runs.
+
 Start with four concurrent models. Increase to eight only if `nvidia-smi` shows
 substantial free memory and the elapsed time per model does not increase too
 much. Per-model logs are stored under
