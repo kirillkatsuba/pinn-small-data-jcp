@@ -57,7 +57,9 @@ test_results/
 test_ml_pinn/
 paper_jcp/output/
 paper_jcp/tmp/
-/paper_jcp/generated/
+/paper_jcp/generated/*
+!/paper_jcp/generated/publication_data/
+!/paper_jcp/generated/publication_data/**
 /paper_jcp/experiments/
 
 # Retained locally for audit/backward compatibility, but superseded by the
