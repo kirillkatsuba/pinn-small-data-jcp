@@ -22,7 +22,7 @@ For sample index `i`, the corresponding flattened parameter-array element `i`
 is used: `pwat_100.npy` = water exponent, `poil_100.npy` = oil exponent,
 `kwat_100.npy` = water endpoint, and `koil_100.npy` = oil endpoint.
 These arrays and the separate permeability files are byte-identical copies of
-the fixed inputs in `../../../reproducibility/data_inputs/`.
+the fixed inputs in `../reproducibility/data_inputs/`.
 
 ## NumPy file schema
 
@@ -54,7 +54,7 @@ from pathlib import Path
 import json
 import numpy as np
 
-root = Path("paper_jcp/generated/publication_data")
+root = Path("data")
 with np.load(root / "test2/solution.npz", allow_pickle=False) as data:
     saturation = data["water_saturation"]  # (time, x, y)
     settings = json.loads(data["metadata_json"].item())
@@ -74,3 +74,9 @@ Model weights, training logs and model-comparison metric CSVs are outside
 this dataset directory. The code and reproduction instructions are being
 synchronized separately; this data-only addition does not certify that the
 current default code commands reproduce every result in the latest manuscript.
+
+## Repository location
+
+The canonical dataset directory is `data/` at the repository root.
+`paper_jcp/generated/publication_data` is a symbolic link to `../../data`
+retained for existing experiment commands; it does not duplicate the dataset.

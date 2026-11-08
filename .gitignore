@@ -110,3 +110,7 @@ paper_jcp/jcp_article/*.pdf
 # Slurm runtime logs
 /slurm/logs/*
 !/slurm/logs/.gitkeep
+
+# Published reference dataset at the repository root.
+!/data/
+!/data/**

@@ -122,7 +122,7 @@ Test 1 is analytical. Generate Tests 2--4 from the tracked physical inputs:
 ```bash
 python3 -B paper_jcp/generate_corrected_benchmarks.py \
   --test all \
-  --output-root paper_jcp/generated/publication_data \
+  --output-root data \
   --output-steps 100 \
   --final-time-test2 0.3 \
   --final-time-test3 0.05 \
@@ -192,7 +192,7 @@ python3 -B paper_jcp/run_zero_label_experiment.py \
   --learning-rate 0.003 --min-learning-rate 0.00001 \
   --l0-data 0.03 --l0-ibc 0.003 --orthogonal-floor 0.25 \
   --gradient-clip 1 --physics-validation-size 512 --log-every 100 \
-  --corrected-data-root paper_jcp/generated/publication_data \
+  --corrected-data-root data \
   --device cpu --workers 1
 ```
 
@@ -251,3 +251,10 @@ are recorded in [`reproducibility/ENVIRONMENT.md`](reproducibility/ENVIRONMENT.m
 License and final citation metadata should be added before the public GitHub
 release. Until then, the repository should be treated as research code
 associated with the manuscript in `paper_jcp/jcp_article/`.
+
+## Reference dataset
+
+The fixed reference flow solutions, permeability fields and relative-permeability
+parameters used in the JCP study are stored in [`data/`](data/). See
+[`data/README.md`](data/README.md) for the schema and integrity checks. The former
+`paper_jcp/generated/publication_data` path is retained as a compatibility symlink.
